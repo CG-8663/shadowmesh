@@ -4,9 +4,19 @@
 
 ---
 
-## ⚠️ Status: Alpha - Under Active Development
+## 🎉 Status: Production Milestone Achieved!
 
-**Warning**: This software is in early development and should not be used in production environments.
+**MAJOR UPDATE - November 1, 2025**: World's first post-quantum VPN network is LIVE and operational!
+
+**Current Status**:
+✅ **Production mesh network** spanning Belgium → Germany → Philippines (15,000 km)
+✅ **Zero errors** (Encrypt=0, Decrypt=0, Dropped=0) across thousands of frames
+✅ **Perfect connectivity** over Starlink satellite internet
+✅ **Multi-platform** (Raspberry Pi, Proxmox, UpCloud cloud)
+✅ **Systemd service** with automatic reconnection
+✅ **Ready for beta testing** and early adopters
+
+See [PRODUCTION_MILESTONE.md](PRODUCTION_MILESTONE.md) for full details and evidence.
 
 ---
 
@@ -248,6 +258,8 @@ shadowmesh/
 
 ## 🧪 Testing
 
+### Unit and Integration Tests
+
 ```bash
 # Run all tests
 go test ./...
@@ -265,6 +277,27 @@ go test -v ./test/integration/
 go test -cover -coverprofile=coverage.txt ./...
 go tool cover -html=coverage.txt
 ```
+
+### Performance Testing (Production Network)
+
+**Quick Performance Test** (5 minutes):
+```bash
+./scripts/quick-perf-test.sh
+```
+
+**ShadowMesh vs Tailscale Comparison** (15 minutes):
+```bash
+./scripts/compare-tailscale-shadowmesh.sh
+```
+
+**What Gets Tested**:
+- ✅ Latency measurements (min/avg/max/jitter)
+- ✅ Packet loss rates
+- ✅ TCP throughput (single and parallel streams)
+- ✅ Large packet handling (MTU testing)
+- ✅ Side-by-side comparison with Tailscale
+
+**See**: [PERFORMANCE_TESTING.md](PERFORMANCE_TESTING.md) for comprehensive testing guide
 
 ## 🛠️ Build Commands
 
