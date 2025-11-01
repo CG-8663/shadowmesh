@@ -175,15 +175,19 @@ shadowmesh/
 - [x] Integration tests (full handshake flow)
 - [x] Installation scripts and documentation
 
-**Code Metrics**: ~4,300 lines of production Go code, 100% of core features implemented
+**Code Metrics**:
+- Client daemon: ~4,300 lines
+- Relay server: ~1,600 lines
+- Total: ~5,900 lines of production Go code
 
 ### 🔄 In Progress (Phase 2 - Relay Server)
 
-- [ ] Relay server WebSocket handler
-- [ ] Client connection management
-- [ ] Frame routing logic
-- [ ] Heartbeat handling
-- [ ] Relay-to-relay communication
+- [x] Relay server WebSocket handler
+- [x] Client connection management
+- [x] Frame routing logic (broadcast mode)
+- [x] Heartbeat handling
+- [ ] Relay-to-relay communication (future)
+- [ ] Stage testing with client ↔ relay
 
 ### 📋 Planned (Phase 3 - Blockchain)
 
@@ -228,11 +232,19 @@ go tool cover -html=coverage.txt
 # Build client only
 make build-client
 
-# Build all components
+# Build relay server
+make build-relay
+
+# Build all components (client + relay)
 make build
 
 # Install client to /usr/local/bin
 sudo make install-client
+
+# Run relay server (requires config and keys)
+./build/shadowmesh-relay --gen-keys    # Generate relay keys
+./build/shadowmesh-relay --show-config # View configuration
+sudo ./build/shadowmesh-relay          # Start relay server
 
 # Run tests
 make test
