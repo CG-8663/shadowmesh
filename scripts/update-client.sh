@@ -13,6 +13,15 @@ fi
 ARCH=$(uname -m)
 echo "Detected architecture: $ARCH"
 
+# Ensure Go is in PATH
+export PATH=$PATH:/usr/local/go/bin
+if ! command -v go &> /dev/null; then
+    echo "ERROR: Go not found. Please install Go first."
+    exit 1
+fi
+
+echo "Using Go: $(go version)"
+
 # Stop service
 echo "Stopping shadowmesh-client service..."
 systemctl stop shadowmesh-client
@@ -27,6 +36,7 @@ git reset --hard origin/main
 
 # Build client
 echo "Building updated client..."
+export PATH=$PATH:/usr/local/go/bin
 make build-client
 
 # Install binary
