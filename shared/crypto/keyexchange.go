@@ -152,6 +152,39 @@ func Encapsulate(publicKey *HybridPublicKey) (sharedSecret, ciphertext []byte, e
 	return hybridSecret, combinedCiphertext, nil
 }
 
+// EncapsulateKEM performs only KEM encapsulation (without ECDH)
+// Returns the KEM shared secret and KEM ciphertext only
+func EncapsulateKEM(publicKey kem.PublicKey) (sharedSecret, ciphertext []byte, err error) {
+	if publicKey == nil {
+		return nil, nil, ErrKEMInvalidPublicKey
+	}
+
+	scheme := kyber1024.Scheme()
+
+	// Perform ML-KEM-1024 encapsulation
+	kemCiphertext, kemSecret, err := scheme.Encapsulate(publicKey)
+	if err != nil {
+		return nil, nil, fmt.Errorf("%w: %v", ErrKEMEncapsulationFailed, err)
+	}
+
+	return kemSecret, kemCiphertext, nil
+}
+
+// PerformECDH performs an ECDH key exchange
+// Returns the ECDH shared secret
+func PerformECDH(privateKey *ecdh.PrivateKey, publicKey *ecdh.PublicKey) ([]byte, error) {
+	if privateKey == nil || publicKey == nil {
+		return nil, ErrKEMInvalidPublicKey
+	}
+
+	ecdhSecret, err := privateKey.ECDH(publicKey)
+	if err != nil {
+		return nil, fmt.Errorf("ECDH failed: %w", err)
+	}
+
+	return ecdhSecret, nil
+}
+
 // Decapsulate performs hybrid key decapsulation using the private key and ciphertext
 // Returns the shared secret
 func Decapsulate(privateKey *HybridKeyPair, ciphertext []byte) (sharedSecret []byte, err error) {
@@ -195,6 +228,30 @@ func Decapsulate(privateKey *HybridKeyPair, ciphertext []byte) (sharedSecret []b
 	hybridSecret := deriveSharedSecret(kemSecret, ecdhSecret)
 
 	return hybridSecret, nil
+}
+
+// DecapsulateKEM performs only KEM decapsulation (without ECDH)
+// Returns the KEM shared secret only
+func DecapsulateKEM(privateKey kem.PrivateKey, kemCiphertext []byte) ([]byte, error) {
+	if privateKey == nil {
+		return nil, ErrKEMNilKeyPair
+	}
+
+	scheme := kyber1024.Scheme()
+	kemCiphertextSize := scheme.CiphertextSize()
+
+	// Validate ciphertext length
+	if len(kemCiphertext) != kemCiphertextSize {
+		return nil, fmt.Errorf("%w: expected %d bytes, got %d", ErrKEMInvalidCiphertext, kemCiphertextSize, len(kemCiphertext))
+	}
+
+	// Perform ML-KEM-1024 decapsulation
+	kemSecret, err := scheme.Decapsulate(privateKey, kemCiphertext)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrKEMDecapsulationFailed, err)
+	}
+
+	return kemSecret, nil
 }
 
 // deriveSharedSecret combines the KEM and ECDH shared secrets using HKDF-SHA256

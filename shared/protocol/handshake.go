@@ -193,30 +193,29 @@ func (hs *HandshakeState) CreateChallengeMessage() (*Message, error) {
 		return nil, fmt.Errorf("only relays can send CHALLENGE messages")
 	}
 
-	// Encapsulate shared secret using client's KEM public key
-	kemSharedSecret, kemCiphertext, err := crypto.Encapsulate(hs.RemoteKEMPubKey)
+	// Encapsulate shared secret using client's KEM public key (KEM only, not hybrid)
+	kemSharedSecret, kemCiphertext, err := crypto.EncapsulateKEM(hs.RemoteKEMPubKey.KEMPublicKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encapsulate KEM secret: %w", err)
 	}
 	hs.KEMSharedSecret = kemSharedSecret
 
-	// For ECDH, we use the client's public key with our private key
-	// Note: crypto.Encapsulate gives us both keys combined, we need to extract ECDH shared secret manually
-	// Actually, let's use the simpler approach - save the ciphertext and derive later
+	// Perform ECDH with client's ECDH public key
+	ecdhSharedSecret, err := crypto.PerformECDH(hs.LocalECDHKeys.ECDHPrivateKey, hs.RemoteKEMPubKey.ECDHPublicKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to perform ECDH: %w", err)
+	}
+	hs.ECDHSharedSecret = ecdhSharedSecret
 
-	// Get our ECDH public key
-	ecdhPubBytes := hs.LocalECDHKeys.PublicKey().PublicKeyBytes()
+	// Get our ECDH public key (just the 32-byte ECDH part)
+	ecdhPubBytes := hs.LocalECDHKeys.ECDHPublicKey.Bytes()
 
 	// Prepare message fields
 	var kemCT [KEMCiphertextSize]byte
 	var ecdhPubKey [ECDHPublicKeySize]byte
 
-	copy(kemCT[:], kemCiphertext[:KEMCiphertextSize])
-	copy(ecdhPubKey[:], ecdhPubBytes[:ECDHPublicKeySize])
-
-	// Derive ECDH shared secret (we'll compute this using the hybrid method)
-	// For now, store a placeholder - the client will compute the ECDH on their side
-	// The relay needs to be able to compute ECDH too, but crypto.Encapsulate handles this
+	copy(kemCT[:], kemCiphertext)
+	copy(ecdhPubKey[:], ecdhPubBytes)
 
 	// Create signature
 	timestamp := time.Now().UnixNano()
@@ -238,13 +237,9 @@ func (hs *HandshakeState) CreateChallengeMessage() (*Message, error) {
 	copy(sig[:], signature[:SignatureSize])
 	copy(classicalSig[:], signature[SignatureSize:SignatureSize+Ed25519SignatureSize])
 
-	// Derive master secret now that we have both secrets
-	// Actually, we need ECDH secret too - let's compute it properly
-	// We need to perform DH with remote ECDH key and our ECDH key
-	// This is tricky because crypto lib doesn't expose raw DH
-
-	// For now, set master secret from KEM only (we'll fix ECDH integration later)
-	hs.MasterSecret = hs.KEMSharedSecret // TEMPORARY - need to add ECDH
+	// Derive master secret from both KEM and ECDH secrets using HKDF
+	combinedSecret := append(hs.KEMSharedSecret, hs.ECDHSharedSecret...)
+	hs.MasterSecret = deriveKey(combinedSecret, []byte("ShadowMesh-v1-MasterSecret"), 32)
 
 	return NewChallengeMessage(hs.LocalID, hs.SessionID, kemCT, ecdhPubKey,
 		hs.Nonce, sig, classicalSig, timestamp), nil
@@ -276,20 +271,23 @@ func (hs *HandshakeState) ProcessChallengeMessage(msg *ChallengeMessage) error {
 		return fmt.Errorf("CHALLENGE message expired")
 	}
 
-	// Decapsulate KEM shared secret
-	kemSharedSecret, err := crypto.Decapsulate(hs.LocalKEMKeys, msg.KEMCiphertext[:])
+	// Decapsulate KEM shared secret (KEM only, not hybrid)
+	kemSharedSecret, err := crypto.DecapsulateKEM(hs.LocalKEMKeys.KEMPrivateKey, msg.KEMCiphertext[:])
 	if err != nil {
 		return fmt.Errorf("failed to decapsulate KEM secret: %w", err)
 	}
 	hs.KEMSharedSecret = kemSharedSecret
 
-	// For ECDH, we use similar approach - the crypto lib handles hybrid KEM+ECDH
-	// The shared secret from Decapsulate already includes both
-	// Actually, looking at the crypto code, Encapsulate/Decapsulate handle BOTH KEM and ECDH
-	// So the kemSharedSecret is actually the combined secret
+	// Perform ECDH with relay's ECDH public key
+	ecdhSharedSecret, err := crypto.PerformECDH(hs.LocalECDHKeys.ECDHPrivateKey, hs.RemoteECDHPubKey.ECDHPublicKey)
+	if err != nil {
+		return fmt.Errorf("failed to perform ECDH: %w", err)
+	}
+	hs.ECDHSharedSecret = ecdhSharedSecret
 
-	// Derive master secret
-	hs.MasterSecret = hs.KEMSharedSecret
+	// Derive master secret from both KEM and ECDH secrets using HKDF
+	combinedSecret := append(hs.KEMSharedSecret, hs.ECDHSharedSecret...)
+	hs.MasterSecret = deriveKey(combinedSecret, []byte("ShadowMesh-v1-MasterSecret"), 32)
 
 	return nil
 }
