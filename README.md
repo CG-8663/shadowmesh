@@ -94,7 +94,8 @@ make build-client && scp bin/shadowmesh-client root@proxmox-vm:/usr/local/bin/
 curl -sSL https://raw.githubusercontent.com/CG-8663/shadowmesh/main/scripts/install-relay.sh | sudo bash
 
 # On Proxmox VM (client):
-make build-client && scp bin/shadowmesh-client root@proxmox-vm:/usr/local/bin/
+curl -sSL https://raw.githubusercontent.com/CG-8663/shadowmesh/main/scripts/install-client.sh | sudo bash
+# Then edit /etc/shadowmesh/config.yaml with your relay URL
 ```
 
 ## 🏗️ Architecture
