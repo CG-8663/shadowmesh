@@ -114,25 +114,28 @@ func (hs *HandshakeState) CreateHelloMessage() (*Message, error) {
 		return nil, fmt.Errorf("only clients can send HELLO messages")
 	}
 
-	// Get public key bytes
-	kemPubBytes := hs.LocalKEMKeys.PublicKey().PublicKeyBytes()
-	ecdhPubBytes := hs.LocalECDHKeys.PublicKey().PublicKeyBytes()
+	// Get public key bytes (just the individual keys, not combined)
+	kemPubKey, err := hs.LocalKEMKeys.KEMPublicKey.MarshalBinary()
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal KEM public key: %w", err)
+	}
+	ecdhPubBytes := hs.LocalECDHKeys.ECDHPublicKey.Bytes()
 
 	// Prepare fixed-size arrays
-	var kemPubKey [KEMPublicKeySize]byte
-	var ecdhPubKey [ECDHPublicKeySize]byte
+	var kemPubKeyArray [KEMPublicKeySize]byte
+	var ecdhPubKeyArray [ECDHPublicKeySize]byte
 
-	// Only copy the KEM portion (first 1568 bytes)
-	copy(kemPubKey[:], kemPubBytes[:KEMPublicKeySize])
-	// Only copy the ECDH portion (first 32 bytes)
-	copy(ecdhPubKey[:], ecdhPubBytes[:ECDHPublicKeySize])
+	// Copy KEM public key (1568 bytes)
+	copy(kemPubKeyArray[:], kemPubKey)
+	// Copy ECDH public key (32 bytes)
+	copy(ecdhPubKeyArray[:], ecdhPubBytes)
 
 	// Create signature data: ClientID || KEM_PK || ECDH_PK || Timestamp
 	timestamp := hs.Timestamp.UnixNano()
 	sigData := make([]byte, 0, ClientIDSize+KEMPublicKeySize+ECDHPublicKeySize+8)
 	sigData = append(sigData, hs.LocalID[:]...)
-	sigData = append(sigData, kemPubKey[:]...)
-	sigData = append(sigData, ecdhPubKey[:]...)
+	sigData = append(sigData, kemPubKeyArray[:]...)
+	sigData = append(sigData, ecdhPubKeyArray[:]...)
 	sigData = append(sigData, uint64ToBytes(uint64(timestamp))...)
 
 	// Sign with hybrid signature
@@ -147,7 +150,7 @@ func (hs *HandshakeState) CreateHelloMessage() (*Message, error) {
 	copy(sig[:], signature[:SignatureSize])
 	copy(classicalSig[:], signature[SignatureSize:SignatureSize+Ed25519SignatureSize])
 
-	return NewHelloMessage(hs.LocalID, kemPubKey, ecdhPubKey, sig, classicalSig, timestamp), nil
+	return NewHelloMessage(hs.LocalID, kemPubKeyArray, ecdhPubKeyArray, sig, classicalSig, timestamp), nil
 }
 
 // ProcessHelloMessage processes a received HELLO message (relay side)
