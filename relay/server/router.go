@@ -94,8 +94,9 @@ func (r *Router) RouteFrame(source *ClientConnection, msg *protocol.Message) {
 
 // routeBroadcast broadcasts a frame to all other clients
 func (r *Router) routeBroadcast(source *ClientConnection, msg *protocol.Message, data *protocol.DataFrame) {
-	// STEP 1: Decrypt the frame using source client's RX key
-	sourceDecryptor, err := crypto.NewFrameEncryptor(source.sessionKeys.RXKey)
+	// STEP 1: Decrypt the frame using source client's TX key
+	// (Client encrypts with TX key when sending to relay)
+	sourceDecryptor, err := crypto.NewFrameEncryptor(source.sessionKeys.TXKey)
 	if err != nil {
 		log.Printf("Failed to create decryptor for source client %x: %v", source.clientID[:8], err)
 		r.framesFailed.Add(1)
@@ -128,7 +129,8 @@ func (r *Router) routeBroadcast(source *ClientConnection, msg *protocol.Message,
 	// STEP 3: Re-encrypt and send to each destination
 	successCount := 0
 	for _, dest := range destinations {
-		// Create encryptor for destination client using their TX key
+		// Create encryptor for destination client using relay's TX key for that client
+		// (Relay encrypts with TX key when sending to client; client decrypts with RX key)
 		destEncryptor, err := crypto.NewFrameEncryptor(dest.sessionKeys.TXKey)
 		if err != nil {
 			log.Printf("Failed to create encryptor for dest client %x: %v", dest.clientID[:8], err)
