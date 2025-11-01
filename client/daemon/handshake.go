@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/shadowmesh/shadowmesh/shared/crypto"
@@ -84,9 +85,11 @@ func (ho *HandshakeOrchestrator) sendHello() error {
 		return fmt.Errorf("failed to create HELLO message: %w", err)
 	}
 
+	log.Println("Sending HELLO message to relay...")
 	if err := ho.conn.SendMessage(helloMsg); err != nil {
 		return fmt.Errorf("failed to send HELLO message: %w", err)
 	}
+	log.Println("HELLO message queued, waiting for CHALLENGE...")
 
 	return nil
 }
@@ -156,15 +159,18 @@ func (ho *HandshakeOrchestrator) processEstablished(msg *protocol.Message) (*Ses
 
 // waitForMessage waits for a specific message type with timeout
 func (ho *HandshakeOrchestrator) waitForMessage(expectedType byte, timeout time.Duration) (*protocol.Message, error) {
+	log.Printf("Waiting for %s message (timeout: %v)...", protocol.MessageTypeName(expectedType), timeout)
 	timer := time.NewTimer(timeout)
 	defer timer.Stop()
 
 	for {
 		select {
 		case <-timer.C:
+			log.Printf("Timeout waiting for %s message after %v", protocol.MessageTypeName(expectedType), timeout)
 			return nil, fmt.Errorf("timeout waiting for %s message", protocol.MessageTypeName(expectedType))
 
 		case msg := <-ho.conn.ReceiveChannel():
+			log.Printf("Received message type: %s", protocol.MessageTypeName(msg.Header.Type))
 			// Handle ERROR messages
 			if msg.Header.Type == protocol.MsgTypeError {
 				errorPayload, ok := msg.Payload.(*protocol.ErrorMessage)
@@ -185,6 +191,7 @@ func (ho *HandshakeOrchestrator) waitForMessage(expectedType byte, timeout time.
 				protocol.MessageTypeName(msg.Header.Type), protocol.MessageTypeName(expectedType))
 
 		case err := <-ho.conn.ErrorChannel():
+			log.Printf("Connection error during handshake: %v", err)
 			return nil, fmt.Errorf("connection error during handshake: %w", err)
 		}
 	}
