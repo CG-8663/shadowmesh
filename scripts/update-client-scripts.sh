@@ -26,11 +26,17 @@ if [ -d "$INSTALL_DIR/.git" ]; then
     echo "Updating existing repository..."
     cd "$INSTALL_DIR"
 
-    # Stash any local changes
-    sudo git stash
+    # Save any local changes
+    echo "Backing up local changes..."
+    sudo git add -A 2>/dev/null || true
+    sudo git stash 2>/dev/null || true
 
-    # Pull latest changes
-    sudo git pull origin main
+    # Force fetch latest
+    sudo git fetch origin main
+
+    # Reset to match remote (this handles untracked files)
+    echo "Resetting to latest version..."
+    sudo git reset --hard origin/main
 
     echo "✅ Repository updated to latest version"
 else
