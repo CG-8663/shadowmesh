@@ -92,7 +92,7 @@ make build-client
 # Install binary
 echo ""
 echo "Installing client binary..."
-cp build/shadowmesh-client /usr/local/bin/shadowmesh-client
+cp bin/shadowmesh-client /usr/local/bin/shadowmesh-client
 chmod +x /usr/local/bin/shadowmesh-client
 
 # Create directories
