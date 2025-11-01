@@ -62,14 +62,39 @@ sudo shadowmesh-client
 
 ### Local Testing
 
-For testing client-relay communication locally, see **[STAGE_TESTING.md](STAGE_TESTING.md)** for a complete guide.
+For testing client-relay communication locally, see **[STAGE_TESTING.md](STAGE_TESTING.md)**.
 
 ```bash
-# Quick test setup:
+# Quick local test:
 ./scripts/generate-test-certs.sh test-certs  # Generate TLS certificates
 make build                                    # Build client + relay
 sudo ./build/shadowmesh-relay                 # Start relay server
 sudo ./build/shadowmesh-client                # Start client (in another terminal)
+```
+
+### Cloud Testing (Recommended)
+
+For production-like testing with UpCloud VM + Proxmox VM, see **[DISTRIBUTED_TESTING.md](DISTRIBUTED_TESTING.md)** or **[UPCLOUD_DEPLOYMENT.md](UPCLOUD_DEPLOYMENT.md)** for automated deployment.
+
+**Automated Deployment (upctl CLI):**
+```bash
+# Configure upctl
+upctl config set --key username=YOUR_USERNAME token=YOUR_TOKEN
+
+# Deploy relay server (auto-install via cloud-init)
+./scripts/deploy-upcloud.sh shadowmesh-relay de-fra1
+
+# On Proxmox VM (client):
+make build-client && scp bin/shadowmesh-client root@proxmox-vm:/usr/local/bin/
+```
+
+**Manual Deployment:**
+```bash
+# On UpCloud VM (relay):
+curl -sSL https://raw.githubusercontent.com/CG-8663/shadowmesh/main/scripts/install-relay.sh | sudo bash
+
+# On Proxmox VM (client):
+make build-client && scp bin/shadowmesh-client root@proxmox-vm:/usr/local/bin/
 ```
 
 ## 🏗️ Architecture
@@ -276,7 +301,8 @@ make help
 ## 📖 Documentation
 
 - **[INSTALL.md](INSTALL.md)** - Installation guide
-- **[STAGE_TESTING.md](STAGE_TESTING.md)** - Stage testing guide (client ↔ relay)
+- **[STAGE_TESTING.md](STAGE_TESTING.md)** - Local testing guide (localhost)
+- **[DISTRIBUTED_TESTING.md](DISTRIBUTED_TESTING.md)** - Cloud testing guide (UpCloud + Proxmox)
 - **[shared/protocol/PROTOCOL_SPEC.md](shared/protocol/PROTOCOL_SPEC.md)** - Wire protocol specification
 - **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - Executive summary
 - **[COMPETITIVE_ANALYSIS.md](COMPETITIVE_ANALYSIS.md)** - vs WireGuard/Tailscale/ZeroTier
