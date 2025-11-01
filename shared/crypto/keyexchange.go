@@ -247,6 +247,45 @@ func ParsePublicKey(publicKeyBytes []byte) (*HybridPublicKey, error) {
 	}, nil
 }
 
+// ParseKEMPublicKey parses only a KEM public key from bytes
+func ParseKEMPublicKey(kemPubBytes []byte) (kem.PublicKey, error) {
+	scheme := kyber1024.Scheme()
+	kemPubKeySize := scheme.PublicKeySize()
+
+	if len(kemPubBytes) != kemPubKeySize {
+		return nil, fmt.Errorf("%w: expected %d bytes, got %d", ErrKEMInvalidPublicKey, kemPubKeySize, len(kemPubBytes))
+	}
+
+	kemPub, err := scheme.UnmarshalBinaryPublicKey(kemPubBytes)
+	if err != nil || kemPub == nil {
+		return nil, fmt.Errorf("%w: failed to unmarshal KEM public key", ErrKEMInvalidPublicKey)
+	}
+
+	return kemPub, nil
+}
+
+// ParseECDHPublicKey parses only an ECDH public key from bytes
+func ParseECDHPublicKey(ecdhPubBytes []byte) (*ecdh.PublicKey, error) {
+	if len(ecdhPubBytes) != 32 {
+		return nil, fmt.Errorf("%w: expected 32 bytes, got %d", ErrKEMInvalidPublicKey, len(ecdhPubBytes))
+	}
+
+	ecdhPub, err := ecdh.X25519().NewPublicKey(ecdhPubBytes)
+	if err != nil {
+		return nil, fmt.Errorf("%w: failed to parse ECDH public key: %v", ErrKEMInvalidPublicKey, err)
+	}
+
+	return ecdhPub, nil
+}
+
+// NewHybridPublicKey creates a HybridPublicKey from separate KEM and ECDH public keys
+func NewHybridPublicKey(kemPub kem.PublicKey, ecdhPub *ecdh.PublicKey) *HybridPublicKey {
+	return &HybridPublicKey{
+		KEMPublicKey:  kemPub,
+		ECDHPublicKey: ecdhPub,
+	}
+}
+
 // hybridKeyPairJSON is used for JSON marshaling/unmarshaling
 type hybridKeyPairJSON struct {
 	KEMPublicKey   string `json:"kem_public_key"`

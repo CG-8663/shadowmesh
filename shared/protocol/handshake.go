@@ -156,18 +156,21 @@ func (hs *HandshakeState) ProcessHelloMessage(msg *HelloMessage) error {
 		return fmt.Errorf("clients cannot process HELLO messages")
 	}
 
-	// Parse public keys
-	kemPubKey, err := crypto.ParsePublicKey(msg.KEMPublicKey[:])
+	// Parse KEM public key
+	kemPub, err := crypto.ParseKEMPublicKey(msg.KEMPublicKey[:])
 	if err != nil {
 		return fmt.Errorf("failed to parse KEM public key: %w", err)
 	}
-	hs.RemoteKEMPubKey = kemPubKey
 
-	ecdhPubKey, err := crypto.ParsePublicKey(msg.ECDHPublicKey[:])
+	// Parse ECDH public key
+	ecdhPub, err := crypto.ParseECDHPublicKey(msg.ECDHPublicKey[:])
 	if err != nil {
 		return fmt.Errorf("failed to parse ECDH public key: %w", err)
 	}
-	hs.RemoteECDHPubKey = ecdhPubKey
+
+	// Create hybrid public key from separate components
+	hs.RemoteKEMPubKey = crypto.NewHybridPublicKey(kemPub, ecdhPub)
+	hs.RemoteECDHPubKey = hs.RemoteKEMPubKey // Same hybrid key for both (contains both KEM and ECDH)
 
 	copy(hs.RemoteID[:], msg.ClientID[:])
 
@@ -258,12 +261,14 @@ func (hs *HandshakeState) ProcessChallengeMessage(msg *ChallengeMessage) error {
 	copy(hs.SessionID[:], msg.SessionID[:])
 	copy(hs.Nonce[:], msg.Nonce[:])
 
-	// Parse relay's ECDH public key
-	ecdhPubKey, err := crypto.ParsePublicKey(msg.ECDHPublicKey[:])
+	// Parse relay's ECDH public key (only ECDH, no KEM in CHALLENGE)
+	ecdhPub, err := crypto.ParseECDHPublicKey(msg.ECDHPublicKey[:])
 	if err != nil {
 		return fmt.Errorf("failed to parse ECDH public key: %w", err)
 	}
-	hs.RemoteECDHPubKey = ecdhPubKey
+	// Create a hybrid public key with only ECDH (KEM was already encapsulated in ciphertext)
+	// We'll use a nil KEM public key since we don't need it for ECDH
+	hs.RemoteECDHPubKey = crypto.NewHybridPublicKey(nil, ecdhPub)
 
 	// Verify timestamp
 	msgTime := time.Unix(0, msg.Timestamp)
