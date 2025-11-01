@@ -293,7 +293,7 @@ func (hs *HandshakeState) ProcessChallengeMessage(msg *ChallengeMessage) error {
 	combinedSecret := append(hs.KEMSharedSecret, hs.ECDHSharedSecret...)
 	masterSecret, err := deriveKey(combinedSecret, nil, []byte("ShadowMesh-v1-MasterSecret"), 32)
 	if err != nil {
-		return nil, fmt.Errorf("failed to derive master secret: %w", err)
+		return fmt.Errorf("failed to derive master secret: %w", err)
 	}
 	hs.MasterSecret = masterSecret
 
