@@ -39,12 +39,16 @@ func (ho *HandshakeOrchestrator) PerformHandshake() (*SessionKeys, error) {
 	}
 	log.Println("Post-quantum keys generated successfully")
 	ho.handshakeState = hs
+	log.Println("Setting handshake state on connection...")
 	ho.conn.SetHandshakeState(hs)
+	log.Println("Handshake state set, ready to send HELLO")
 
 	// Step 2: Send HELLO message
+	log.Println("About to call sendHello()...")
 	if err := ho.sendHello(); err != nil {
 		return nil, fmt.Errorf("failed to send HELLO: %w", err)
 	}
+	log.Println("sendHello() completed successfully")
 
 	// Step 3: Wait for CHALLENGE message
 	challengeMsg, err := ho.waitForMessage(protocol.MsgTypeChallenge, ho.timeout)
