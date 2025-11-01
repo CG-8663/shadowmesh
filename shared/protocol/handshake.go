@@ -16,8 +16,7 @@ const (
 	// HKDF salts and info strings
 	hkdfSaltMasterSecret = "ShadowMesh-v1-KDF"
 	hkdfInfoHandshake    = "handshake-master-secret"
-	hkdfSaltTX           = "ShadowMesh-v1-TX"
-	hkdfSaltRX           = "ShadowMesh-v1-RX"
+	hkdfSaltSession      = "ShadowMesh-v1-Session" // Single salt for both TX/RX (differentiate via reversed info)
 	hkdfInfoSession      = "session-keys"
 )
 
@@ -353,23 +352,23 @@ func (hs *HandshakeState) DeriveSessionKeys() error {
 		return fmt.Errorf("master secret not established")
 	}
 
-	// Derive TX key
+	// Derive TX key (Local → Remote)
 	txInfo := append([]byte(hkdfInfoSession), hs.SessionID[:]...)
 	txInfo = append(txInfo, hs.LocalID[:]...)
 	txInfo = append(txInfo, hs.RemoteID[:]...)
 
-	txKey, err := deriveKey(hs.MasterSecret, []byte(hkdfSaltTX), txInfo, 32)
+	txKey, err := deriveKey(hs.MasterSecret, []byte(hkdfSaltSession), txInfo, 32)
 	if err != nil {
 		return fmt.Errorf("failed to derive TX key: %w", err)
 	}
 	hs.TXKey = txKey
 
-	// Derive RX key
+	// Derive RX key (Remote → Local, reversed info)
 	rxInfo := append([]byte(hkdfInfoSession), hs.SessionID[:]...)
 	rxInfo = append(rxInfo, hs.RemoteID[:]...)
 	rxInfo = append(rxInfo, hs.LocalID[:]...)
 
-	rxKey, err := deriveKey(hs.MasterSecret, []byte(hkdfSaltRX), rxInfo, 32)
+	rxKey, err := deriveKey(hs.MasterSecret, []byte(hkdfSaltSession), rxInfo, 32)
 	if err != nil {
 		return fmt.Errorf("failed to derive RX key: %w", err)
 	}

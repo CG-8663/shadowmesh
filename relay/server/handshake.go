@@ -128,6 +128,20 @@ func (rh *RelayHandshakeHandler) HandleHandshake(ctx context.Context, client *Cl
 	copy(client.sessionKeys.TXKey[:], handshakeState.TXKey)  // Relay TX = Client RX
 	copy(client.sessionKeys.RXKey[:], handshakeState.RXKey)  // Relay RX = Client TX
 
+	// Create persistent frame encryptors for this client
+	// This ensures nonce consistency across all encrypted/decrypted frames
+	txEncryptor, err := crypto.NewFrameEncryptor(client.sessionKeys.TXKey)
+	if err != nil {
+		return fmt.Errorf("failed to create TX encryptor: %w", err)
+	}
+	client.txEncryptor = txEncryptor
+
+	rxEncryptor, err := crypto.NewFrameEncryptor(client.sessionKeys.RXKey)
+	if err != nil {
+		return fmt.Errorf("failed to create RX encryptor: %w", err)
+	}
+	client.rxEncryptor = rxEncryptor
+
 	log.Printf("Handshake complete with client %x (session: %x)",
 		client.clientID[:8],
 		client.sessionID[:8])

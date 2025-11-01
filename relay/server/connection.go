@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/shadowmesh/shadowmesh/shared/crypto"
 	"github.com/shadowmesh/shadowmesh/shared/protocol"
 )
 
@@ -53,6 +54,10 @@ type ClientConnection struct {
 	// Session info
 	sessionID    [16]byte
 	sessionKeys  *SessionKeys
+
+	// Frame encryption (persistent encryptors)
+	txEncryptor  *crypto.FrameEncryptor
+	rxEncryptor  *crypto.FrameEncryptor
 
 	// Communication channels
 	sendChan     chan *protocol.Message

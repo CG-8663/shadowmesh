@@ -5,7 +5,6 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/shadowmesh/shadowmesh/shared/crypto"
 	"github.com/shadowmesh/shadowmesh/shared/protocol"
 )
 
@@ -94,16 +93,15 @@ func (r *Router) RouteFrame(source *ClientConnection, msg *protocol.Message) {
 
 // routeBroadcast broadcasts a frame to all other clients
 func (r *Router) routeBroadcast(source *ClientConnection, msg *protocol.Message, data *protocol.DataFrame) {
-	// STEP 1: Decrypt the frame using relay's RX key for source client
-	// (Client TX key == Relay RX key, both derived from ClientID||RelayID)
-	sourceDecryptor, err := crypto.NewFrameEncryptor(source.sessionKeys.RXKey)
-	if err != nil {
-		log.Printf("Failed to create decryptor for source client %x: %v", source.clientID[:8], err)
+	// STEP 1: Decrypt the frame using relay's RX encryptor for source client
+	// Use the persistent encryptor to maintain nonce consistency
+	if source.rxEncryptor == nil {
+		log.Printf("RX encryptor not initialized for source client %x", source.clientID[:8])
 		r.framesFailed.Add(1)
 		return
 	}
 
-	plaintext, err := sourceDecryptor.Decrypt(data.EncryptedData)
+	plaintext, err := source.rxEncryptor.Decrypt(data.EncryptedData)
 	if err != nil {
 		log.Printf("Failed to decrypt frame from client %x: %v", source.clientID[:8], err)
 		r.framesFailed.Add(1)
@@ -129,17 +127,16 @@ func (r *Router) routeBroadcast(source *ClientConnection, msg *protocol.Message,
 	// STEP 3: Re-encrypt and send to each destination
 	successCount := 0
 	for _, dest := range destinations {
-		// Create encryptor for destination client using relay's TX key for that client
-		// (Relay TX key == Client RX key, both derived from RelayID||ClientID)
-		destEncryptor, err := crypto.NewFrameEncryptor(dest.sessionKeys.TXKey)
-		if err != nil {
-			log.Printf("Failed to create encryptor for dest client %x: %v", dest.clientID[:8], err)
+		// Use the persistent TX encryptor for destination client
+		// This maintains nonce consistency for all encrypted frames to this client
+		if dest.txEncryptor == nil {
+			log.Printf("TX encryptor not initialized for dest client %x", dest.clientID[:8])
 			r.framesFailed.Add(1)
 			continue
 		}
 
 		// Re-encrypt plaintext for destination
-		reEncrypted, err := destEncryptor.Encrypt(plaintext)
+		reEncrypted, err := dest.txEncryptor.Encrypt(plaintext)
 		if err != nil {
 			log.Printf("Failed to re-encrypt frame for client %x: %v", dest.clientID[:8], err)
 			r.framesFailed.Add(1)
