@@ -44,6 +44,8 @@ See [INSTALL.md](INSTALL.md) for detailed installation instructions.
 
 ## 🎯 Quick Start
 
+### Production Use
+
 ```bash
 # Generate post-quantum keys
 shadowmesh-client --gen-keys
@@ -56,6 +58,18 @@ nano ~/.shadowmesh/config.yaml
 
 # Run the client (requires root for TAP device)
 sudo shadowmesh-client
+```
+
+### Local Testing
+
+For testing client-relay communication locally, see **[STAGE_TESTING.md](STAGE_TESTING.md)** for a complete guide.
+
+```bash
+# Quick test setup:
+./scripts/generate-test-certs.sh test-certs  # Generate TLS certificates
+make build                                    # Build client + relay
+sudo ./build/shadowmesh-relay                 # Start relay server
+sudo ./build/shadowmesh-client                # Start client (in another terminal)
 ```
 
 ## 🏗️ Architecture
@@ -262,6 +276,7 @@ make help
 ## 📖 Documentation
 
 - **[INSTALL.md](INSTALL.md)** - Installation guide
+- **[STAGE_TESTING.md](STAGE_TESTING.md)** - Stage testing guide (client ↔ relay)
 - **[shared/protocol/PROTOCOL_SPEC.md](shared/protocol/PROTOCOL_SPEC.md)** - Wire protocol specification
 - **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - Executive summary
 - **[COMPETITIVE_ANALYSIS.md](COMPETITIVE_ANALYSIS.md)** - vs WireGuard/Tailscale/ZeroTier
@@ -300,9 +315,10 @@ ShadowMesh builds upon:
 
 ## 📞 Support
 
+- **Documentation**: TBC
 - **GitHub Issues**: https://github.com/CG-8663/shadowmesh/issues
-- **Documentation**: See `docs/` directory
-- **Email**: support@shadowmesh.network (coming soon)
+- **Discord**: TBC
+- **Email**: TBC
 
 ---
 
