@@ -30,6 +30,7 @@ type Config struct {
 // RelayConfig contains relay server settings
 type RelayConfig struct {
 	URL               string        `yaml:"url"`                // WebSocket URL (ws://... or wss://...)
+	TLSSkipVerify     bool          `yaml:"tls_skip_verify"`    // Skip TLS certificate verification (for self-signed certs)
 	ReconnectInterval time.Duration `yaml:"reconnect_interval"` // Time between reconnection attempts
 	MaxReconnects     int           `yaml:"max_reconnects"`     // Maximum reconnection attempts
 	HandshakeTimeout  time.Duration `yaml:"handshake_timeout"`  // Handshake timeout

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/url"
 	"sync"
@@ -46,6 +47,7 @@ func (s ConnectionState) String() string {
 type ConnectionManager struct {
 	// Configuration
 	relayURL          string
+	tlsSkipVerify     bool
 	reconnectInterval time.Duration
 	maxReconnects     int
 
@@ -74,11 +76,12 @@ type ConnectionManager struct {
 }
 
 // NewConnectionManager creates a new connection manager
-func NewConnectionManager(relayURL string) *ConnectionManager {
+func NewConnectionManager(relayURL string, tlsSkipVerify bool) *ConnectionManager {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &ConnectionManager{
 		relayURL:          relayURL,
+		tlsSkipVerify:     tlsSkipVerify,
 		reconnectInterval: 5 * time.Second,
 		maxReconnects:     10,
 		state:             StateDisconnected,
@@ -171,6 +174,9 @@ func (cm *ConnectionManager) connect() error {
 	// Dial WebSocket connection
 	dialer := websocket.Dialer{
 		HandshakeTimeout: 10 * time.Second,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: cm.tlsSkipVerify,
+		},
 	}
 
 	conn, _, err := dialer.Dial(u.String(), nil)

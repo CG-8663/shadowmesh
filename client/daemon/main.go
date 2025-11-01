@@ -88,7 +88,7 @@ func main() {
 
 	// Create connection manager
 	log.Printf("Connecting to relay: %s", config.Relay.URL)
-	connMgr := NewConnectionManager(config.Relay.URL)
+	connMgr := NewConnectionManager(config.Relay.URL, config.Relay.TLSSkipVerify)
 	connMgr.SetCallbacks(
 		func() {
 			log.Println("Connected to relay")
