@@ -86,10 +86,13 @@ func (ho *HandshakeOrchestrator) PerformHandshake() (*SessionKeys, error) {
 
 // sendHello creates and sends a HELLO message
 func (ho *HandshakeOrchestrator) sendHello() error {
+	log.Println("Creating HELLO message (generating ephemeral Kyber keys)...")
 	helloMsg, err := ho.handshakeState.CreateHelloMessage()
 	if err != nil {
+		log.Printf("ERROR: Failed to create HELLO message: %v", err)
 		return fmt.Errorf("failed to create HELLO message: %w", err)
 	}
+	log.Println("HELLO message created successfully")
 
 	log.Println("Sending HELLO message to relay...")
 	if err := ho.conn.SendMessage(helloMsg); err != nil {
