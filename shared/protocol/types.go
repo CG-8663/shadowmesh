@@ -79,7 +79,7 @@ const (
 	KEMPublicKeySize    = 1568             // ML-KEM-1024 public key
 	KEMCiphertextSize   = 1568             // ML-KEM-1024 ciphertext
 	ECDHPublicKeySize   = 32               // X25519 public key
-	SignatureSize       = 4627             // ML-DSA-87 signature
+	SignatureSize       = 4595             // ML-DSA-87 (Dilithium mode5) signature - CORRECTED from 4627
 	Ed25519SignatureSize = 64              // Ed25519 signature
 
 	// Timeouts and intervals

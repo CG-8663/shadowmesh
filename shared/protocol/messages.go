@@ -425,7 +425,7 @@ func decodeClose(data []byte) (*CloseMessage, error) {
 
 // NewHelloMessage creates a new HELLO message
 func NewHelloMessage(clientID [32]byte, kemPubKey [1568]byte, ecdhPubKey [32]byte,
-	sig [4627]byte, classicalSig [64]byte, timestamp int64) *Message {
+	sig [4595]byte, classicalSig [64]byte, timestamp int64) *Message {
 	return &Message{
 		Header: NewHeader(MsgTypeHello, FlagNone, 0),
 		Payload: &HelloMessage{
@@ -441,7 +441,7 @@ func NewHelloMessage(clientID [32]byte, kemPubKey [1568]byte, ecdhPubKey [32]byt
 
 // NewChallengeMessage creates a new CHALLENGE message
 func NewChallengeMessage(relayID [32]byte, sessionID [16]byte, kemCT [1568]byte, ecdhPubKey [32]byte,
-	nonce [24]byte, sig [4627]byte, classicalSig [64]byte, timestamp int64) *Message {
+	nonce [24]byte, sig [4595]byte, classicalSig [64]byte, timestamp int64) *Message {
 
 	return &Message{
 		Header: NewHeader(MsgTypeChallenge, FlagNone, 0),
