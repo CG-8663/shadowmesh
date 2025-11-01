@@ -5,6 +5,7 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/shadowmesh/shadowmesh/shared/crypto"
 	"github.com/shadowmesh/shadowmesh/shared/protocol"
 )
 
@@ -93,7 +94,22 @@ func (r *Router) RouteFrame(source *ClientConnection, msg *protocol.Message) {
 
 // routeBroadcast broadcasts a frame to all other clients
 func (r *Router) routeBroadcast(source *ClientConnection, msg *protocol.Message, data *protocol.DataFrame) {
-	// Get all clients except source
+	// STEP 1: Decrypt the frame using source client's RX key
+	sourceDecryptor, err := crypto.NewFrameEncryptor(source.sessionKeys.RXKey)
+	if err != nil {
+		log.Printf("Failed to create decryptor for source client %x: %v", source.clientID[:8], err)
+		r.framesFailed.Add(1)
+		return
+	}
+
+	plaintext, err := sourceDecryptor.Decrypt(data.EncryptedData)
+	if err != nil {
+		log.Printf("Failed to decrypt frame from client %x: %v", source.clientID[:8], err)
+		r.framesFailed.Add(1)
+		return
+	}
+
+	// STEP 2: Get all destination clients except source
 	r.connMgr.clientsMutex.RLock()
 	destinations := make([]*ClientConnection, 0, len(r.connMgr.clients)-1)
 	for clientID, client := range r.connMgr.clients {
@@ -109,10 +125,30 @@ func (r *Router) routeBroadcast(source *ClientConnection, msg *protocol.Message,
 	}
 	r.connMgr.clientsMutex.RUnlock()
 
-	// Send to all destinations
+	// STEP 3: Re-encrypt and send to each destination
 	successCount := 0
 	for _, dest := range destinations {
-		if err := dest.SendMessage(msg); err != nil {
+		// Create encryptor for destination client using their TX key
+		destEncryptor, err := crypto.NewFrameEncryptor(dest.sessionKeys.TXKey)
+		if err != nil {
+			log.Printf("Failed to create encryptor for dest client %x: %v", dest.clientID[:8], err)
+			r.framesFailed.Add(1)
+			continue
+		}
+
+		// Re-encrypt plaintext for destination
+		reEncrypted, err := destEncryptor.Encrypt(plaintext)
+		if err != nil {
+			log.Printf("Failed to re-encrypt frame for client %x: %v", dest.clientID[:8], err)
+			r.framesFailed.Add(1)
+			continue
+		}
+
+		// Create new message with re-encrypted data
+		reEncryptedMsg := protocol.NewDataFrameMessage(data.Counter, reEncrypted)
+
+		// Send re-encrypted frame to destination
+		if err := dest.SendMessage(reEncryptedMsg); err != nil {
 			log.Printf("Failed to route frame from %x to %x: %v",
 				source.clientID[:8],
 				dest.clientID[:8],
@@ -126,7 +162,7 @@ func (r *Router) routeBroadcast(source *ClientConnection, msg *protocol.Message,
 	// Update statistics
 	if successCount > 0 {
 		r.framesRouted.Add(1)
-		r.bytesRouted.Add(uint64(msg.Header.Length))
+		r.bytesRouted.Add(uint64(len(plaintext)))
 		r.broadcastCount.Add(uint64(successCount))
 	}
 }
