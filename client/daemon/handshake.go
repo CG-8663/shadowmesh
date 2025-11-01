@@ -32,10 +32,12 @@ func NewHandshakeOrchestrator(conn *ConnectionManager, clientID [32]byte, sigKey
 // Returns the session keys (TX/RX) and session ID upon success
 func (ho *HandshakeOrchestrator) PerformHandshake() (*SessionKeys, error) {
 	// Step 1: Initialize handshake state
+	log.Println("Generating post-quantum keys (ML-KEM-1024, ML-DSA-87)... this may take 10-30 seconds")
 	hs, err := protocol.NewClientHandshakeState(ho.clientID, ho.sigKeys)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize handshake state: %w", err)
 	}
+	log.Println("Post-quantum keys generated successfully")
 	ho.handshakeState = hs
 	ho.conn.SetHandshakeState(hs)
 
