@@ -105,3 +105,18 @@ help:
 
 # Default target
 .DEFAULT_GOAL := help
+
+## build-client: Build client daemon only (for distribution)
+build-client:
+	@echo "Building ShadowMesh client..."
+	@mkdir -p bin
+	$(GOBUILD) $(LDFLAGS) -o bin/shadowmesh-client ./client/daemon
+	@echo "Client built: bin/shadowmesh-client"
+
+## install-client: Install client only
+install-client: build-client
+	@echo "Installing client to /usr/local/bin..."
+	@sudo cp bin/shadowmesh-client /usr/local/bin/
+	@sudo chmod +x /usr/local/bin/shadowmesh-client
+	@echo "Client installed successfully!"
+	@echo "Run 'shadowmesh-client --gen-keys' to get started"
