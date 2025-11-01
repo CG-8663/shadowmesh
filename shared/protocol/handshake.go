@@ -239,7 +239,11 @@ func (hs *HandshakeState) CreateChallengeMessage() (*Message, error) {
 
 	// Derive master secret from both KEM and ECDH secrets using HKDF
 	combinedSecret := append(hs.KEMSharedSecret, hs.ECDHSharedSecret...)
-	hs.MasterSecret = deriveKey(combinedSecret, []byte("ShadowMesh-v1-MasterSecret"), 32)
+	masterSecret, err := deriveKey(combinedSecret, nil, []byte("ShadowMesh-v1-MasterSecret"), 32)
+	if err != nil {
+		return nil, fmt.Errorf("failed to derive master secret: %w", err)
+	}
+	hs.MasterSecret = masterSecret
 
 	return NewChallengeMessage(hs.LocalID, hs.SessionID, kemCT, ecdhPubKey,
 		hs.Nonce, sig, classicalSig, timestamp), nil
@@ -287,7 +291,11 @@ func (hs *HandshakeState) ProcessChallengeMessage(msg *ChallengeMessage) error {
 
 	// Derive master secret from both KEM and ECDH secrets using HKDF
 	combinedSecret := append(hs.KEMSharedSecret, hs.ECDHSharedSecret...)
-	hs.MasterSecret = deriveKey(combinedSecret, []byte("ShadowMesh-v1-MasterSecret"), 32)
+	masterSecret, err := deriveKey(combinedSecret, nil, []byte("ShadowMesh-v1-MasterSecret"), 32)
+	if err != nil {
+		return nil, fmt.Errorf("failed to derive master secret: %w", err)
+	}
+	hs.MasterSecret = masterSecret
 
 	return nil
 }
