@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/cloudflare/circl/sign/dilithium/mode5"
 )
@@ -87,11 +88,15 @@ func Sign(privateKey *HybridSigningKey, message []byte) ([]byte, error) {
 	}
 
 	// Sign with ML-DSA-87
+	log.Println("crypto.Sign: Starting ML-DSA-87 (Dilithium) signature...")
 	mldsaSig := make([]byte, MLDSASignatureSize)
 	mode5.SignTo(privateKey.MLDSAPrivateKey, message, mldsaSig)
+	log.Println("crypto.Sign: ML-DSA-87 signature complete")
 
 	// Sign with Ed25519
+	log.Println("crypto.Sign: Starting Ed25519 signature...")
 	ed25519Sig := ed25519.Sign(privateKey.Ed25519PrivateKey, message)
+	log.Println("crypto.Sign: Ed25519 signature complete")
 	if len(ed25519Sig) != Ed25519SignatureSize {
 		return nil, fmt.Errorf("Ed25519 signature has unexpected length: %d", len(ed25519Sig))
 	}
