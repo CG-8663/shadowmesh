@@ -6,7 +6,7 @@ set -e
 
 echo "╔═══════════════════════════════════════════════════════════╗"
 echo "║       ShadowMesh Client Installer                        ║"
-echo "║       Post-Quantum VPN Network                            ║"
+echo "║       Post-Quantum DPN Network                            ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo ""
 

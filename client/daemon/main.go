@@ -26,8 +26,8 @@ func main() {
 	flag.Parse()
 
 	fmt.Printf("ShadowMesh Client Daemon v%s\n", version)
-	fmt.Println("Post-Quantum Encrypted Private Network")
-	fmt.Println("=======================================")
+	fmt.Println("Post-Quantum Decentralized Private Network (DPN)")
+	fmt.Println("=================================================")
 	fmt.Println()
 
 	// Load or create configuration

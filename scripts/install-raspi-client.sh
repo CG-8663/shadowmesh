@@ -3,7 +3,7 @@ set -e
 
 echo "╔═══════════════════════════════════════════════════════════╗"
 echo "║   ShadowMesh Raspberry Pi Client Auto-Installer          ║"
-echo "║   Post-Quantum VPN Client with Auto-Configuration        ║"
+echo "║   Post-Quantum DPN Client with Auto-Configuration        ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -142,7 +142,7 @@ echo ""
 echo "Creating systemd service..."
 cat > /etc/systemd/system/shadowmesh-client.service << 'EOF'
 [Unit]
-Description=ShadowMesh Post-Quantum VPN Client
+Description=ShadowMesh Post-Quantum DPN Client
 After=network-online.target
 Wants=network-online.target
 

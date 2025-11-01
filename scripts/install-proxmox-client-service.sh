@@ -2,7 +2,7 @@
 set -e
 
 echo "╔═══════════════════════════════════════════════════════════╗"
-echo "║   ShadowMesh Proxmox Client Service Installer            ║"
+echo "║   ShadowMesh Proxmox DPN Client Service Installer        ║"
 echo "║   Installs client as systemd background service          ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo ""
@@ -38,7 +38,7 @@ chmod 700 /var/lib/shadowmesh
 echo "Creating systemd service..."
 cat > /etc/systemd/system/shadowmesh-client.service << 'EOF'
 [Unit]
-Description=ShadowMesh Post-Quantum VPN Client
+Description=ShadowMesh Post-Quantum DPN Client
 After=network-online.target
 Wants=network-online.target
 
