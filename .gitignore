@@ -1,0 +1,53 @@
+# Binaries
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+/client/daemon/shadowmesh-client
+/relay/server/shadowmesh-relay
+/tmp/shadowmesh-client
+
+# Test binaries
+*.test
+*.out
+
+# Go workspace file
+go.work
+
+# Dependencies
+vendor/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Configuration
+config.yaml
+*.local.yaml
+
+# Keys and secrets
+*.key
+*.pem
+*.p12
+keys/
+.shadowmesh/keys/
+
+# Logs
+*.log
+logs/
+
+# Build artifacts
+dist/
+build/
+
+# Temporary files
+tmp/
+temp/
