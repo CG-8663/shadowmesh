@@ -116,7 +116,7 @@ relay:
 tap:
   name: "chr001"
   mtu: 1500
-  ip_addr: "10.10.10.3"
+  ip_addr: "10.10.10.4"
   netmask: "255.255.255.0"
 
 crypto:
@@ -154,7 +154,7 @@ WorkingDirectory=/var/lib/shadowmesh
 ExecStartPre=/sbin/modprobe tun
 ExecStart=/usr/local/bin/shadowmesh-client -config /etc/shadowmesh/config.yaml
 ExecStartPost=/bin/sleep 2
-ExecStartPost=/sbin/ip addr add 10.10.10.3/24 dev chr001
+ExecStartPost=/sbin/ip addr add 10.10.10.4/24 dev chr001
 ExecStartPost=/sbin/ip link set chr001 up
 Restart=always
 RestartSec=10
