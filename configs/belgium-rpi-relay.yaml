@@ -5,7 +5,7 @@ mode: relay
 
 # Relay server connection
 relay:
-  url: "ws://FRANKFURT_RELAY_IP:8080"  # Replace with actual Frankfurt relay IP
+  url: "ws://83.136.252.52:8080"  # Frankfurt UpCloud relay server
   tls_skip_verify: false
   reconnect_interval: 5s
   max_reconnects: 10
