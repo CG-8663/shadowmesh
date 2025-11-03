@@ -80,6 +80,8 @@ echo ""
 
 # Step 2: Build
 echo -e "${BLUE}Step 2: Building...${NC}"
+# Ensure Go is in PATH
+export PATH=$PATH:/usr/local/go/bin
 make build
 if [ ! -f "build/shadowmesh-daemon" ]; then
     echo -e "${RED}✗ Build failed${NC}"
