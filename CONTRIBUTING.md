@@ -1,6 +1,6 @@
 # Contributing to ShadowMesh
 
-<img src="https://pbs.twimg.com/profile_images/1969957304679473152/QW21M-FO_400x400.jpg" alt="Chronara Group Logo" width="120" align="right"/>
+<img src="https://pbs.twimg.com/profile_images/1969957304679473152/QW21M-FO_400x400.jpg" alt="Chronara Group Logo" width="80" align="right"/>
 
 Thank you for your interest in contributing to Chronara Group ShadowMesh! This document provides guidelines for contributing to the project.
 
