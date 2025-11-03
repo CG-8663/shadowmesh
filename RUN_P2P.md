@@ -1,40 +1,38 @@
 # 🚀 Run Direct P2P Testing
 
-## Simple: Just Pull & Run Locally
+## Simple: Just Pull & Run from /opt/shadowmesh
 
 ### On UK VPS (Listener)
 
 ```bash
-# Clone if first time
-git clone https://github.com/CG-8663/shadowmesh.git
-cd shadowmesh
+# Go to installation directory
+cd /opt/shadowmesh
 
-# Or update if already cloned
-cd shadowmesh
-git pull origin main
+# Update from GitHub
+sudo git config pull.rebase false  # One-time setup
+sudo git pull origin main
 
 # Run as listener
-./scripts/update-and-run.sh listener
+sudo ./scripts/update-and-run.sh listener
 ```
 
 ### On Belgium RPi (Connector)
 
 ```bash
-# Clone if first time
-git clone https://github.com/CG-8663/shadowmesh.git
-cd shadowmesh
+# Go to installation directory
+cd /opt/shadowmesh
 
-# Or update if already cloned
-cd shadowmesh
-git pull origin main
+# Update from GitHub
+sudo git config pull.rebase false  # One-time setup
+sudo git pull origin main
 
 # Run as connector (replace with your VPS IP)
-./scripts/update-and-run.sh connector YOUR_VPS_IP
+sudo ./scripts/update-and-run.sh connector YOUR_VPS_IP
 ```
 
 **Example**:
 ```bash
-./scripts/update-and-run.sh connector 123.45.67.89
+sudo ./scripts/update-and-run.sh connector 123.45.67.89
 ```
 
 ---

@@ -45,10 +45,11 @@ echo "║  ShadowMesh - Update & Run                     ║"
 echo "╚════════════════════════════════════════════════╝${NC}"
 echo ""
 
-# Check if we're in the shadowmesh directory
+# Check if we're in a shadowmesh directory
 if [ ! -f "go.mod" ] || ! grep -q "shadowmesh" go.mod; then
     echo -e "${RED}Error: Must run from shadowmesh directory${NC}"
-    echo "Expected: cd ~/shadowmesh && ./scripts/update-and-run.sh $MODE"
+    echo "Expected: cd /opt/shadowmesh && sudo ./scripts/update-and-run.sh $MODE"
+    echo "Or:       cd ~/shadowmesh && ./scripts/update-and-run.sh $MODE"
     exit 1
 fi
 
