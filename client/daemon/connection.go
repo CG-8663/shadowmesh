@@ -385,7 +385,8 @@ func (cm *ConnectionManager) WaitForClose() {
 }
 
 // IsConnected returns whether the connection is established
+// Returns true if WebSocket is connected and ready for handshake or already established
 func (cm *ConnectionManager) IsConnected() bool {
 	state := cm.GetState()
-	return state == StateEstablished
+	return state == StateHandshaking || state == StateEstablished
 }
