@@ -422,7 +422,7 @@ This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDU
 
 - **Reporting vulnerabilities**: See [SECURITY.md](SECURITY.md) for responsible disclosure
 - **Do NOT** open public issues for security vulnerabilities
-- **Contact**: security@shadowmesh.dev for security-related matters
+- **Contact**: projectsupernode@chronara.io for security-related matters
 
 **Known Security Limitations**:
 - No formal security audit completed
@@ -449,7 +449,7 @@ ShadowMesh builds upon:
 - **Documentation**: See `/docs` directory and wiki
 - **GitHub Issues**: For bugs and feature requests
 - **GitHub Discussions**: For questions and ideas
-- **Security**: security@shadowmesh.dev
+- **Security**: projectsupernode@chronara.io
 
 ---
 

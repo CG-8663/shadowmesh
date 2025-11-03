@@ -20,7 +20,7 @@ We take security seriously. If you discover a security vulnerability in ShadowMe
 
 ### How to Report
 
-1. **Email**: Send details to security@shadowmesh.dev (or create a private security advisory on GitHub)
+1. **Email**: Send details to projectsupernode@chronara.io (or create a private security advisory on GitHub)
 2. **Include**:
    - Description of the vulnerability
    - Steps to reproduce
@@ -186,7 +186,7 @@ Subscribe to security advisories:
 
 For security-related questions that are NOT vulnerabilities:
 - Open a GitHub Discussion
-- Email: security@shadowmesh.dev
+- Email: projectsupernode@chronara.io
 
 ---
 
