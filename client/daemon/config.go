@@ -11,8 +11,14 @@ import (
 
 // Config represents the client daemon configuration
 type Config struct {
-	// Relay configuration
-	Relay RelayConfig `yaml:"relay"`
+	// Operating mode: "relay", "listener", or "connector"
+	Mode string `yaml:"mode"`
+
+	// Relay configuration (for relay mode)
+	Relay RelayConfig `yaml:"relay,omitempty"`
+
+	// P2P configuration (for listener/connector mode)
+	P2P P2PConfig `yaml:"p2p,omitempty"`
 
 	// TAP device configuration
 	TAP TAPDeviceConfig `yaml:"tap"`
@@ -34,6 +40,26 @@ type RelayConfig struct {
 	ReconnectInterval time.Duration `yaml:"reconnect_interval"` // Time between reconnection attempts
 	MaxReconnects     int           `yaml:"max_reconnects"`     // Maximum reconnection attempts
 	HandshakeTimeout  time.Duration `yaml:"handshake_timeout"`  // Handshake timeout
+}
+
+// P2PConfig contains direct peer-to-peer settings
+type P2PConfig struct {
+	// For listener mode
+	ListenAddress string `yaml:"listen_address,omitempty"` // Address to listen on (e.g., "0.0.0.0:8443")
+
+	// For connector mode
+	PeerAddress string `yaml:"peer_address,omitempty"` // Peer address to connect to (e.g., "1.2.3.4:8443")
+
+	// TLS settings
+	TLSEnabled    bool   `yaml:"tls_enabled"`     // Enable TLS
+	TLSSkipVerify bool   `yaml:"tls_skip_verify"` // Skip TLS certificate verification
+	TLSCertFile   string `yaml:"tls_cert_file,omitempty"`   // Path to TLS certificate (for listener)
+	TLSKeyFile    string `yaml:"tls_key_file,omitempty"`    // Path to TLS private key (for listener)
+
+	// Connection settings
+	HandshakeTimeout  time.Duration `yaml:"handshake_timeout,omitempty"`  // Handshake timeout
+	ReconnectInterval time.Duration `yaml:"reconnect_interval,omitempty"` // Reconnect interval (connector only)
+	MaxReconnects     int           `yaml:"max_reconnects,omitempty"`     // Max reconnection attempts (connector only)
 }
 
 // TAPDeviceConfig contains TAP device settings
@@ -70,11 +96,19 @@ func DefaultConfig() *Config {
 	keysDir := filepath.Join(homeDir, ".shadowmesh", "keys")
 
 	return &Config{
+		Mode: "relay", // Default to relay mode for backwards compatibility
 		Relay: RelayConfig{
 			URL:               "wss://relay.shadowmesh.network:443",
 			ReconnectInterval: 5 * time.Second,
 			MaxReconnects:     10,
 			HandshakeTimeout:  30 * time.Second,
+		},
+		P2P: P2PConfig{
+			TLSEnabled:        true,
+			TLSSkipVerify:     false,
+			HandshakeTimeout:  30 * time.Second,
+			ReconnectInterval: 5 * time.Second,
+			MaxReconnects:     10,
 		},
 		TAP: TAPDeviceConfig{
 			Name:    "tap0",
@@ -145,9 +179,43 @@ func (c *Config) SaveConfig(path string) error {
 
 // Validate checks if the configuration is valid
 func (c *Config) Validate() error {
-	// Validate relay URL
-	if c.Relay.URL == "" {
-		return fmt.Errorf("relay URL cannot be empty")
+	// Validate mode
+	validModes := map[string]bool{"relay": true, "listener": true, "connector": true}
+	if !validModes[c.Mode] {
+		return fmt.Errorf("invalid mode: %s (must be 'relay', 'listener', or 'connector')", c.Mode)
+	}
+
+	// Validate mode-specific settings
+	switch c.Mode {
+	case "relay":
+		if c.Relay.URL == "" {
+			return fmt.Errorf("relay URL cannot be empty in relay mode")
+		}
+		if c.Relay.ReconnectInterval < time.Second {
+			return fmt.Errorf("reconnect interval too short: %v", c.Relay.ReconnectInterval)
+		}
+		if c.Relay.MaxReconnects < 1 {
+			return fmt.Errorf("max reconnects must be at least 1")
+		}
+
+	case "listener":
+		if c.P2P.ListenAddress == "" {
+			return fmt.Errorf("listen_address cannot be empty in listener mode")
+		}
+		if c.P2P.TLSEnabled && (c.P2P.TLSCertFile == "" || c.P2P.TLSKeyFile == "") {
+			return fmt.Errorf("TLS cert and key files required when TLS is enabled")
+		}
+
+	case "connector":
+		if c.P2P.PeerAddress == "" {
+			return fmt.Errorf("peer_address cannot be empty in connector mode")
+		}
+		if c.P2P.ReconnectInterval < time.Second {
+			return fmt.Errorf("reconnect interval too short: %v", c.P2P.ReconnectInterval)
+		}
+		if c.P2P.MaxReconnects < 1 {
+			return fmt.Errorf("max reconnects must be at least 1")
+		}
 	}
 
 	// Validate TAP configuration
@@ -156,14 +224,6 @@ func (c *Config) Validate() error {
 	}
 	if c.TAP.MTU < 576 || c.TAP.MTU > 9000 {
 		return fmt.Errorf("invalid MTU: %d (must be between 576 and 9000)", c.TAP.MTU)
-	}
-
-	// Validate reconnect settings
-	if c.Relay.ReconnectInterval < time.Second {
-		return fmt.Errorf("reconnect interval too short: %v", c.Relay.ReconnectInterval)
-	}
-	if c.Relay.MaxReconnects < 1 {
-		return fmt.Errorf("max reconnects must be at least 1")
 	}
 
 	// Validate key rotation interval

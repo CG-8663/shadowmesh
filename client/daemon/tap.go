@@ -209,15 +209,12 @@ func (tap *TAPDevice) MTU() int {
 }
 
 // ConfigureInterface configures the TAP interface with IP address and routing
-// This is a platform-specific operation (requires exec)
 func (tap *TAPDevice) ConfigureInterface(ipAddr, netmask string) error {
-	// Note: Actual implementation would use platform-specific commands
-	// For macOS: ifconfig tap0 10.0.0.2 netmask 255.255.255.0 up
-	// For Linux: ip addr add 10.0.0.2/24 dev tap0 && ip link set tap0 up
-	// For Windows: netsh interface ip set address "tap0" static 10.0.0.2 255.255.255.0
+	// Import networking package for interface configuration
+	// Note: This requires root/sudo privileges
 
-	// This is a placeholder - actual implementation would execute OS commands
-	// or use system calls depending on platform
+	// Placeholder - actual implementation in separate networking package
+	// See shared/networking/ifconfig.go for platform-specific implementation
 
-	return fmt.Errorf("interface configuration not implemented (platform-specific)")
+	return fmt.Errorf("interface configuration requires networking.InterfaceConfigurator")
 }

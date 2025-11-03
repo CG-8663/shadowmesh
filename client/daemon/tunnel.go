@@ -12,8 +12,8 @@ import (
 
 // TunnelManager manages the encrypted tunnel between TAP device and relay
 type TunnelManager struct {
-	tap        *TAPDevice
-	conn       *ConnectionManager
+	tap         *TAPDevice
+	conn        ConnectionInterface
 	sessionKeys *SessionKeys
 
 	// Frame encryption/decryption
@@ -45,7 +45,7 @@ type TunnelStats struct {
 }
 
 // NewTunnelManager creates a new tunnel manager
-func NewTunnelManager(tap *TAPDevice, conn *ConnectionManager, sessionKeys *SessionKeys) (*TunnelManager, error) {
+func NewTunnelManager(tap *TAPDevice, conn ConnectionInterface, sessionKeys *SessionKeys) (*TunnelManager, error) {
 	// Create frame encryptors for TX and RX
 	txEncryptor, err := crypto.NewFrameEncryptor(sessionKeys.TXKey)
 	if err != nil {

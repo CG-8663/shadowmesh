@@ -11,7 +11,7 @@ import (
 
 // HandshakeOrchestrator manages the client-side handshake process
 type HandshakeOrchestrator struct {
-	conn           *ConnectionManager
+	conn           ConnectionInterface
 	handshakeState *protocol.HandshakeState
 	clientID       [32]byte
 	sigKeys        *crypto.HybridSigningKey
@@ -19,7 +19,7 @@ type HandshakeOrchestrator struct {
 }
 
 // NewHandshakeOrchestrator creates a new handshake orchestrator
-func NewHandshakeOrchestrator(conn *ConnectionManager, clientID [32]byte, sigKeys *crypto.HybridSigningKey) *HandshakeOrchestrator {
+func NewHandshakeOrchestrator(conn ConnectionInterface, clientID [32]byte, sigKeys *crypto.HybridSigningKey) *HandshakeOrchestrator {
 	return &HandshakeOrchestrator{
 		conn:     conn,
 		clientID: clientID,
@@ -39,9 +39,7 @@ func (ho *HandshakeOrchestrator) PerformHandshake() (*SessionKeys, error) {
 	}
 	log.Println("Post-quantum keys generated successfully")
 	ho.handshakeState = hs
-	log.Println("Setting handshake state on connection...")
-	ho.conn.SetHandshakeState(hs)
-	log.Println("Handshake state set, ready to send HELLO")
+	log.Println("Handshake state ready")
 
 	// Step 2: Send HELLO message
 	log.Println("About to call sendHello()...")
@@ -78,8 +76,8 @@ func (ho *HandshakeOrchestrator) PerformHandshake() (*SessionKeys, error) {
 		return nil, fmt.Errorf("failed to process ESTABLISHED: %w", err)
 	}
 
-	// Step 8: Update connection state
-	ho.conn.SetState(StateEstablished)
+	// Step 8: Handshake complete
+	log.Println("Handshake sequence complete")
 
 	return sessionKeys, nil
 }

@@ -10,7 +10,7 @@ const version = "0.1.0-alpha"
 func main() {
 	fmt.Printf("ShadowMesh CLI v%s\n", version)
 	fmt.Println("Post-Quantum Encrypted Private Network")
-	fmt.Println("=======================================\n")
+	fmt.Println("=======================================")
 
 	if len(os.Args) < 2 {
 		printUsage()

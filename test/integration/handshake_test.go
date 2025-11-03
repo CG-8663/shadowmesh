@@ -45,7 +45,7 @@ func TestHandshakeFlow(t *testing.T) {
 		t.Fatalf("Failed to create HELLO message: %v", err)
 	}
 
-	t.Logf("HELLO message created, size: %d bytes", len(helloMsg.Header)+int(helloMsg.Header.Length))
+	t.Logf("HELLO message created, size: %d bytes", protocol.HeaderSize+int(helloMsg.Header.Length))
 
 	// Serialize HELLO
 	helloBytes, err := protocol.EncodeMessage(helloMsg)
@@ -81,7 +81,7 @@ func TestHandshakeFlow(t *testing.T) {
 		t.Fatalf("Failed to create CHALLENGE message: %v", err)
 	}
 
-	t.Logf("CHALLENGE message created, size: %d bytes", len(challengeMsg.Header)+int(challengeMsg.Header.Length))
+	t.Logf("CHALLENGE message created, size: %d bytes", protocol.HeaderSize+int(challengeMsg.Header.Length))
 
 	// Serialize CHALLENGE
 	challengeBytes, err := protocol.EncodeMessage(challengeMsg)

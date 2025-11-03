@@ -383,3 +383,9 @@ func (cm *ConnectionManager) ErrorChannel() <-chan error {
 func (cm *ConnectionManager) WaitForClose() {
 	<-cm.closeChan
 }
+
+// IsConnected returns whether the connection is established
+func (cm *ConnectionManager) IsConnected() bool {
+	state := cm.GetState()
+	return state == StateEstablished
+}

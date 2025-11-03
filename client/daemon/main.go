@@ -86,24 +86,78 @@ func main() {
 	// Start TAP device
 	tap.Start()
 
-	// Create connection manager
-	log.Printf("Connecting to relay: %s", config.Relay.URL)
-	connMgr := NewConnectionManager(config.Relay.URL, config.Relay.TLSSkipVerify)
-	connMgr.SetCallbacks(
-		func() {
-			log.Println("Connected to relay")
-		},
-		func(err error) {
-			log.Printf("Disconnected from relay: %v", err)
-		},
-		nil, // Message callback handled by tunnel manager
-	)
+	// Configure network interface
+	log.Printf("Configuring TAP interface: %s/%s", config.TAP.IPAddr, config.TAP.Netmask)
+	// Note: Network configuration requires platform-specific implementation
+	// See shared/networking/ifconfig.go
+
+	// Create connection manager based on mode
+	var connMgr ConnectionInterface
+
+	switch config.Mode {
+	case "relay":
+		log.Printf("Mode: Relay - Connecting to relay: %s", config.Relay.URL)
+		relayMgr := NewConnectionManager(config.Relay.URL, config.Relay.TLSSkipVerify)
+		relayMgr.SetCallbacks(
+			func() {
+				log.Println("Connected to relay")
+			},
+			func(err error) {
+				log.Printf("Disconnected from relay: %v", err)
+			},
+			nil, // Message callback handled by tunnel manager
+		)
+		connMgr = relayMgr
+
+	case "listener":
+		log.Printf("Mode: Listener - Waiting for connections on %s", config.P2P.ListenAddress)
+		p2pMgr := NewP2PConnectionManager(config.P2P, "listener")
+		p2pMgr.SetCallbacks(
+			func() {
+				log.Println("Peer connected")
+			},
+			func(err error) {
+				log.Printf("Peer disconnected: %v", err)
+			},
+			nil, // Message callback handled by tunnel manager
+		)
+		connMgr = p2pMgr
+
+	case "connector":
+		log.Printf("Mode: Connector - Connecting to peer: %s", config.P2P.PeerAddress)
+		p2pMgr := NewP2PConnectionManager(config.P2P, "connector")
+		p2pMgr.SetCallbacks(
+			func() {
+				log.Println("Connected to peer")
+			},
+			func(err error) {
+				log.Printf("Disconnected from peer: %v", err)
+			},
+			nil, // Message callback handled by tunnel manager
+		)
+		connMgr = p2pMgr
+
+	default:
+		log.Fatalf("Invalid mode: %s", config.Mode)
+	}
 
 	// Start connection
 	if err := connMgr.Start(); err != nil {
 		log.Fatalf("Failed to start connection: %v", err)
 	}
 	defer connMgr.Stop()
+
+	// Wait for connection to be established
+	log.Println("Waiting for connection...")
+	for i := 0; i < 30; i++ {
+		if connMgr.IsConnected() {
+			break
+		}
+		time.Sleep(1 * time.Second)
+	}
+	if !connMgr.IsConnected() {
+		log.Fatalf("Connection not established after 30 seconds")
+	}
 
 	// Perform handshake
 	log.Println("Performing post-quantum handshake...")

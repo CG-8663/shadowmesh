@@ -120,3 +120,24 @@ install-client: build-client
 	@sudo chmod +x /usr/local/bin/shadowmesh-client
 	@echo "Client installed successfully!"
 	@echo "Run 'shadowmesh-client --gen-keys' to get started"
+
+## build-remote: Build using Mac Studio M1 Max via MCP
+build-remote:
+	@echo "Building on Mac Studio via MCP server..."
+	@./scripts/build-remote.sh
+
+## test-remote: Run tests on Mac Studio via MCP
+test-remote:
+	@echo "Running tests on Mac Studio via MCP server..."
+	@./scripts/test-remote.sh
+
+## mcp-status: Check MCP server status
+mcp-status:
+	@echo "Checking Mac Studio MCP server..."
+	@curl -s http://100.113.157.118:3000/health | jq .
+
+## mcp-sync: Sync code to Mac Studio
+mcp-sync:
+	@echo "Syncing code to Mac Studio..."
+	@rsync -avz --delete --exclude='.git' --exclude='build/' --exclude='bin/' --exclude='daemon' . james@100.113.157.118:/Volumes/backupdisk/WebCode/shadowmesh/
+	@echo "Sync complete"
