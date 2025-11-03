@@ -80,9 +80,16 @@ echo ""
 
 # Step 2: Build
 echo -e "${BLUE}Step 2: Building...${NC}"
-# Ensure Go is in PATH
+# Ensure Go is in PATH (handle both regular and sudo contexts)
 export PATH=$PATH:/usr/local/go/bin
-make build
+# Use sudo -E to preserve environment, or run make with explicit PATH
+if [ "$EUID" -eq 0 ]; then
+    # Already running as root
+    PATH=$PATH:/usr/local/go/bin make build
+else
+    # Running as regular user
+    make build
+fi
 if [ ! -f "build/shadowmesh-daemon" ]; then
     echo -e "${RED}✗ Build failed${NC}"
     exit 1
