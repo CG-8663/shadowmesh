@@ -25,7 +25,7 @@ RELAY_SERVER = shadowmesh-relay
 all: clean build
 
 ## build: Build all components
-build: build-client-daemon build-client-cli build-relay
+build: build-client-daemon build-client-cli
 
 ## build-client-daemon: Build client daemon
 build-client-daemon:
@@ -89,7 +89,6 @@ install: build
 	@echo "Installing binaries..."
 	@sudo cp $(BUILD_DIR)/$(CLIENT_DAEMON) /usr/local/bin/
 	@sudo cp $(BUILD_DIR)/$(CLIENT_CLI) /usr/local/bin/
-	@sudo cp $(BUILD_DIR)/$(RELAY_SERVER) /usr/local/bin/
 	@echo "Installation complete!"
 
 ## dev: Run in development mode
