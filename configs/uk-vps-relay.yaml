@@ -1,0 +1,36 @@
+# UK VPS Configuration (Relay Mode)
+# Connects to Frankfurt relay server for P2P coordination
+
+mode: relay
+
+# Relay server connection
+relay:
+  url: "ws://FRANKFURT_RELAY_IP:8080"  # Replace with actual Frankfurt relay IP
+  tls_skip_verify: false
+  reconnect_interval: 5s
+  max_reconnects: 10
+  handshake_timeout: 30s
+
+# TAP device configuration
+tap:
+  name: "chr-001"
+  mtu: 1500
+  ip_addr: "10.10.10.3"
+  netmask: "255.255.255.0"
+
+# Cryptographic settings
+crypto:
+  key_rotation_interval: 1h
+  enable_key_rotation: true
+
+# Client identity
+identity:
+  keys_dir: "/root/.shadowmesh/keys"
+  private_key_file: "/root/.shadowmesh/keys/signing_key.json"
+  client_id_file: "/root/.shadowmesh/keys/client_id.txt"
+
+# Logging
+logging:
+  level: "debug"
+  format: "text"
+  file: "/var/log/shadowmesh/daemon.log"
