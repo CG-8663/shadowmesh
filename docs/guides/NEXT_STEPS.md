@@ -1,8 +1,7 @@
-# ShadowMesh - Next Steps
-
-<img src="https://pbs.twimg.com/profile_images/1969957304679473152/QW21M-FO_400x400.jpg" alt="Chronara Group Logo" width="80" align="right"/>
-
-**Chronara Group ShadowMesh - Development Roadmap**
+<h1>
+  <img src="https://pbs.twimg.com/profile_images/1969957304679473152/QW21M-FO_400x400.jpg" alt="Chronara Group Logo" height="60" style="vertical-align: middle; margin-right: 15px;"/>
+  Chronara Group ShadowMesh - Development Roadmap
+</h1>
 
 **Status**: Alpha (0.1.0-alpha) - Active Development
 **Date**: November 2025

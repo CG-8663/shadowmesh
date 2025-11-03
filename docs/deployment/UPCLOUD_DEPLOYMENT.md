@@ -1,8 +1,7 @@
-# UpCloud Automated Deployment
-
-<img src="https://pbs.twimg.com/profile_images/1969957304679473152/QW21M-FO_400x400.jpg" alt="Chronara Group Logo" width="80" align="right"/>
-
-**Chronara Group ShadowMesh - UpCloud Deployment**
+<h1>
+  <img src="https://pbs.twimg.com/profile_images/1969957304679473152/QW21M-FO_400x400.jpg" alt="Chronara Group Logo" height="60" style="vertical-align: middle; margin-right: 15px;"/>
+  Chronara Group ShadowMesh - UpCloud Automated Deployment
+</h1>
 
 ## Quick Start
 

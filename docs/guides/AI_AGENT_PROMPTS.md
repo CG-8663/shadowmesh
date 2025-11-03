@@ -1,8 +1,7 @@
-# AI Agent Prompt Instructions for ShadowMesh Project
-
-<img src="https://pbs.twimg.com/profile_images/1969957304679473152/QW21M-FO_400x400.jpg" alt="Chronara Group Logo" width="80" align="right"/>
-
-**Chronara Group ShadowMesh - AI Development Guide**
+<h1>
+  <img src="https://pbs.twimg.com/profile_images/1969957304679473152/QW21M-FO_400x400.jpg" alt="Chronara Group Logo" height="60" style="vertical-align: middle; margin-right: 15px;"/>
+  Chronara Group ShadowMesh - AI Development Guide
+</h1>
 
 ## Purpose
 This document contains precise prompt instructions for AI agents (CAIAF, Development Team, etc.) to accurately build the Chronara Group ShadowMesh Decentralized Private Network (DPN). Each section provides context, constraints, and expected outputs to ensure consistency and quality.
