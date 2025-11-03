@@ -5,8 +5,8 @@ mode: relay
 
 # Relay server connection
 relay:
-  url: "ws://83.136.252.52:8080"  # Frankfurt UpCloud relay server
-  tls_skip_verify: false
+  url: "wss://83.136.252.52:8443/ws"  # Frankfurt UpCloud relay server
+  tls_skip_verify: true  # Self-signed cert
   reconnect_interval: 5s
   max_reconnects: 10
   handshake_timeout: 30s
