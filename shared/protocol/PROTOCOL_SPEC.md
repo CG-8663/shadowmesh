@@ -1,8 +1,12 @@
 # ShadowMesh Wire Protocol Specification v1.0
 
+<img src="https://pbs.twimg.com/profile_images/1969957304679473152/QW21M-FO_400x400.jpg" alt="Chronara Group Logo" width="80" align="right"/>
+
+**Chronara Group ShadowMesh - Protocol Specification v1.0**
+
 ## Overview
 
-The ShadowMesh protocol is a post-quantum secure VPN protocol operating at Layer 2 (Ethernet frames). It uses hybrid post-quantum cryptography for key exchange and signatures, with ChaCha20-Poly1305 for symmetric encryption.
+The Chronara Group ShadowMesh protocol is a post-quantum secure Decentralized Private Network (DPN) protocol operating at Layer 2 (Ethernet frames). It uses hybrid post-quantum cryptography for key exchange and signatures, with ChaCha20-Poly1305 for symmetric encryption.
 
 ## Transport Layer
 

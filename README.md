@@ -1,37 +1,55 @@
-# ShadowMesh
+<h1>
+  <img src="https://pbs.twimg.com/profile_images/1969957304679473152/QW21M-FO_400x400.jpg" alt="Chronara Group Logo" height="60" style="vertical-align: middle; margin-right: 15px;"/>
+  Chronara Group ShadowMesh
+</h1>
 
-**Post-Quantum Encrypted Private Network**
+**Post-Quantum Decentralized Private Network (DPN)**
 
----
-
-## 🎉 Status: Production Milestone Achieved!
-
-**MAJOR UPDATE - November 1, 2025**: World's first post-quantum VPN network is LIVE and operational!
-
-**Current Status**:
-✅ **Production mesh network** spanning Belgium → Germany → Philippines (15,000 km)
-✅ **Zero errors** (Encrypt=0, Decrypt=0, Dropped=0) across thousands of frames
-✅ **Perfect connectivity** over Starlink satellite internet
-✅ **Multi-platform** (Raspberry Pi, Proxmox, UpCloud cloud)
-✅ **Systemd service** with automatic reconnection
-✅ **Ready for beta testing** and early adopters
-
-See [PRODUCTION_MILESTONE.md](PRODUCTION_MILESTONE.md) for full details and evidence.
+[![Version](https://img.shields.io/badge/version-0.1.0--alpha-blue.svg)](https://github.com/CG-8663/shadowmesh/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go)](https://golang.org)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Security](https://img.shields.io/badge/Security-Policy-red)](SECURITY.md)
+[![Code of Conduct](https://img.shields.io/badge/Code%20of-Conduct-blue)](CODE_OF_CONDUCT.md)
 
 ---
 
-ShadowMesh is a revolutionary decentralized private network that surpasses WireGuard, Tailscale, and ZeroTier by 5-10 years in security capabilities. Built with post-quantum cryptography, atomic clock timing synchronization, and zero-trust relay node architecture, ShadowMesh addresses the critical vulnerabilities that all current private networking solutions will face when quantum computers become viable.
+## Project Status
 
-## 🚀 Key Features
+**Current Version**: 0.1.0-alpha
+**Status**: Alpha - Active Development
+**Last Updated**: November 2025
 
-- **Post-Quantum Security**: ML-KEM-1024 (Kyber) + ML-DSA-87 (Dilithium) - NIST standardized
-- **Layer 2 Architecture**: TAP device implementation for pure Ethernet frame encryption
-- **Hybrid Cryptography**: PQC + Classical (X25519, Ed25519) for defense-in-depth
-- **ChaCha20-Poly1305**: Symmetric encryption with atomic counter-based nonce generation
-- **Aggressive Key Rotation**: Configurable from 10 seconds to 1 hour intervals
-- **WebSocket Transport**: Mimics HTTPS traffic for DPI evasion
-- **Perfect Forward Secrecy**: Session keys rotate, old sessions cannot be decrypted
-- **Replay Protection**: Monotonic frame counters prevent frame replay attacks
+ShadowMesh is currently in alpha testing. The client implementation is feature-complete for core functionality, but has not undergone independent security audit. We welcome community feedback and contributions.
+
+**Tested Platforms**:
+- Linux (Debian, Ubuntu)
+- Raspberry Pi (ARM64)
+- Cloud VMs (UpCloud, Proxmox)
+
+**Known Limitations**:
+- Alpha software - expect breaking changes
+- Relay server not included (proprietary)
+- No formal security audit completed
+- Limited platform testing (Linux only)
+
+---
+
+ShadowMesh is an experimental Decentralized Private Network (DPN) client implementing NIST-standardized post-quantum cryptography. Unlike traditional VPNs with centralized trust models, ShadowMesh explores a decentralized architecture where relay nodes are verified via blockchain attestation. The project integrates quantum-resistant algorithms (ML-KEM-1024, ML-DSA-87) in a practical Layer 2 implementation using TAP devices for Ethernet-level encryption.
+
+This project is designed to investigate post-quantum DPN architectures and gather community feedback on the decentralized trust model.
+
+## Implementation Features
+
+- **Post-Quantum Cryptography**: Implements ML-KEM-1024 (NIST FIPS 203) and ML-DSA-87 (NIST FIPS 204)
+- **Hybrid Mode**: Combines post-quantum algorithms with classical X25519/Ed25519
+- **Layer 2 DPN**: TAP device implementation for Ethernet frame encryption
+- **Decentralized Trust**: Blockchain-based relay node verification (planned)
+- **Symmetric Encryption**: ChaCha20-Poly1305 (IETF RFC 8439)
+- **Key Rotation**: Configurable rotation intervals (10 seconds to 1 hour)
+- **Transport**: WebSocket over TLS 1.3
+- **Forward Secrecy**: Ephemeral session keys
+- **Replay Protection**: Monotonic counter-based frame numbering
 
 ## 📦 Quick Installation
 
@@ -50,11 +68,11 @@ make build-client
 sudo make install-client
 ```
 
-See [INSTALL.md](INSTALL.md) for detailed installation instructions.
+See [docs/deployment/INSTALL.md](docs/deployment/INSTALL.md) for detailed installation instructions.
 
 ## 🎯 Quick Start
 
-### Production Use
+### Basic Usage
 
 ```bash
 # Generate post-quantum keys
@@ -70,9 +88,11 @@ nano ~/.shadowmesh/config.yaml
 sudo shadowmesh-client
 ```
 
+**Note**: Requires a compatible relay server. Relay server implementation is not included in this repository.
+
 ### Local Testing
 
-For testing client-relay communication locally, see **[STAGE_TESTING.md](STAGE_TESTING.md)**.
+For testing client-relay communication locally, see **[docs/deployment/STAGE_TESTING.md](docs/deployment/STAGE_TESTING.md)**.
 
 ```bash
 # Quick local test:
@@ -84,7 +104,7 @@ sudo ./build/shadowmesh-client                # Start client (in another termina
 
 ### Cloud Testing (Recommended)
 
-For production-like testing with UpCloud VM + Proxmox VM, see **[DISTRIBUTED_TESTING.md](DISTRIBUTED_TESTING.md)** or **[UPCLOUD_DEPLOYMENT.md](UPCLOUD_DEPLOYMENT.md)** for automated deployment.
+For production-like testing with UpCloud VM + Proxmox VM, see **[docs/deployment/DISTRIBUTED_TESTING.md](docs/deployment/DISTRIBUTED_TESTING.md)** or **[docs/deployment/UPCLOUD_DEPLOYMENT.md](docs/deployment/UPCLOUD_DEPLOYMENT.md)** for automated deployment.
 
 **Automated Deployment (upctl CLI):**
 ```bash
@@ -297,7 +317,9 @@ go tool cover -html=coverage.txt
 - ✅ Large packet handling (MTU testing)
 - ✅ Side-by-side comparison with Tailscale
 
-**See**: [PERFORMANCE_TESTING.md](PERFORMANCE_TESTING.md) for comprehensive testing guide
+**See**: [docs/performance/PERFORMANCE_TESTING.md](docs/performance/PERFORMANCE_TESTING.md) for comprehensive testing guide
+
+**Results**: See [docs/performance/PERFORMANCE_RESULTS.md](docs/performance/PERFORMANCE_RESULTS.md) and [docs/performance/PRODUCTION_VALIDATION_REPORT.md](docs/performance/PRODUCTION_VALIDATION_REPORT.md) for proven benchmarks showing **ShadowMesh outperforms Tailscale** by 30% on latency!
 
 ## 🛠️ Build Commands
 
@@ -334,36 +356,85 @@ make help
 
 ## 📖 Documentation
 
-- **[INSTALL.md](INSTALL.md)** - Installation guide
-- **[STAGE_TESTING.md](STAGE_TESTING.md)** - Local testing guide (localhost)
-- **[DISTRIBUTED_TESTING.md](DISTRIBUTED_TESTING.md)** - Cloud testing guide (UpCloud + Proxmox)
+### 🚀 Getting Started
+- **[docs/guides/GETTING_STARTED.md](docs/guides/GETTING_STARTED.md)** - Complete getting started guide
+- **[docs/guides/QUICK_REFERENCE.md](docs/guides/QUICK_REFERENCE.md)** - Common commands cheatsheet
+- **[docs/guides/NEXT_STEPS.md](docs/guides/NEXT_STEPS.md)** - Roadmap and next actions
+
+### 📦 Deployment
+- **[docs/deployment/INSTALL.md](docs/deployment/INSTALL.md)** - Installation guide
+- **[docs/deployment/STAGE_TESTING.md](docs/deployment/STAGE_TESTING.md)** - Local testing (localhost)
+- **[docs/deployment/DISTRIBUTED_TESTING.md](docs/deployment/DISTRIBUTED_TESTING.md)** - Cloud testing (UpCloud + Proxmox)
+- **[docs/deployment/UPCLOUD_DEPLOYMENT.md](docs/deployment/UPCLOUD_DEPLOYMENT.md)** - Automated UpCloud deployment
+- **[docs/deployment/UPDATE_CLIENTS.md](docs/deployment/UPDATE_CLIENTS.md)** - Update client scripts
+
+### 🏗️ Architecture
 - **[shared/protocol/PROTOCOL_SPEC.md](shared/protocol/PROTOCOL_SPEC.md)** - Wire protocol specification
-- **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - Executive summary
-- **[COMPETITIVE_ANALYSIS.md](COMPETITIVE_ANALYSIS.md)** - vs WireGuard/Tailscale/ZeroTier
-- **[ENHANCED_SECURITY_SPECS.md](ENHANCED_SECURITY_SPECS.md)** - Advanced security features
-- **[docs/prd.md](docs/prd.md)** - Product Requirements Document
-- **[docs/brief.md](docs/brief.md)** - Project brief
+- **[docs/architecture/PROJECT_SPEC.md](docs/architecture/PROJECT_SPEC.md)** - Technical specifications
+- **[docs/architecture/ENHANCED_SECURITY_SPECS.md](docs/architecture/ENHANCED_SECURITY_SPECS.md)** - Advanced security features
+- **[docs/architecture/ZERO_TRUST_ARCHITECTURE.md](docs/architecture/ZERO_TRUST_ARCHITECTURE.md)** - Zero-trust design
+- **[docs/architecture/SITE_TO_SITE_VPN_CONFIG.md](docs/architecture/SITE_TO_SITE_VPN_CONFIG.md)** - Site-to-site VPN setup
+- **[docs/architecture/AWS_S3_KMS_TERRAFORM.md](docs/architecture/AWS_S3_KMS_TERRAFORM.md)** - Cloud infrastructure templates
 
-## 🎯 Target Use Cases
+## Potential Applications
 
-1. **Enterprise Security** - Financial institutions, healthcare, defense contractors
-2. **Privacy-Conscious Users** - Journalists, activists, users in censored countries
-3. **Government/Military** - Quantum-resistant communications
-4. **Crypto/Blockchain** - High-value transaction protection
+This experimental implementation may be suitable for:
+
+- Research and evaluation of post-quantum DPN protocols
+- Investigation of decentralized private network architectures
+- Testing quantum-resistant cryptography in network contexts
+- Educational purposes and cryptography study
+- Proof-of-concept deployments (non-production)
+
+**Not Recommended For** (at this stage):
+- Production enterprise deployments
+- Mission-critical communications
+- Environments requiring security certifications
+- Use cases requiring guaranteed uptime or support
 
 ## 🤝 Contributing
 
-We welcome contributions! Please:
+We welcome contributions from the community! ShadowMesh is open source and benefits from diverse perspectives.
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### How to Contribute
+
+1. **Read** [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines
+2. **Check** existing issues or create a new one
+3. **Fork** the repository and create your feature branch
+4. **Write** tests for new functionality
+5. **Submit** a pull request
+
+### What We're Looking For
+
+- 🐛 Bug fixes and improvements
+- 📚 Documentation enhancements
+- 🧪 Test coverage improvements
+- 🚀 Client performance optimizations
+- 🔧 Platform support (Windows, macOS, ARM)
+
+### Code of Conduct
+
+This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+
+## Security Considerations
+
+**Alpha Status**: This software is experimental DPN technology and has not undergone independent security audit. Use at your own risk.
+
+- **Reporting vulnerabilities**: See [SECURITY.md](SECURITY.md) for responsible disclosure
+- **Do NOT** open public issues for security vulnerabilities
+- **Contact**: security@shadowmesh.dev for security-related matters
+
+**Known Security Limitations**:
+- No formal security audit completed
+- Limited peer review of implementation
+- Alpha software may contain vulnerabilities
+- Not recommended for protecting sensitive data at this time
 
 ## 📜 License
 
-MIT License - see [LICENSE](LICENSE) file for details
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+**Note**: This license applies to the client code in this repository. The relay server implementation is proprietary.
 
 ## 🙏 Acknowledgments
 
@@ -375,11 +446,11 @@ ShadowMesh builds upon:
 
 ## 📞 Support
 
-- **Documentation**: TBC
-- **GitHub Issues**: https://github.com/CG-8663/shadowmesh/issues
-- **Discord**: TBC
-- **Email**: TBC
+- **Documentation**: See `/docs` directory and wiki
+- **GitHub Issues**: For bugs and feature requests
+- **GitHub Discussions**: For questions and ideas
+- **Security**: security@shadowmesh.dev
 
 ---
 
-**Built with the BMAD (BMad Agile Development) Method** - AI-driven planning and development framework
+**ShadowMesh** - An experimental post-quantum Decentralized Private Network (DPN). Contributions and feedback welcome.

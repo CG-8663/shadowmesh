@@ -1,10 +1,14 @@
 # ShadowMesh Smart Contracts
 
-Ethereum smart contracts for the ShadowMesh relay node registry system.
+<img src="https://pbs.twimg.com/profile_images/1969957304679473152/QW21M-FO_400x400.jpg" alt="Chronara Group Logo" width="80" align="right"/>
+
+**Chronara Group ShadowMesh - Smart Contracts**
+
+Ethereum smart contracts for the Chronara Group ShadowMesh relay node registry system.
 
 ## Overview
 
-This directory contains the Solidity smart contracts that manage the decentralized relay node registry for ShadowMesh. The contracts handle:
+This directory contains the Solidity smart contracts that manage the decentralized relay node registry for Chronara Group ShadowMesh. The contracts handle:
 
 - Relay node registration and deregistration
 - Node heartbeat monitoring

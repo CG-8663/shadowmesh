@@ -7,6 +7,7 @@ bin/
 /client/daemon/shadowmesh-client
 /relay/server/shadowmesh-relay
 /tmp/shadowmesh-client
+daemon
 
 # Test binaries
 *.test
@@ -51,3 +52,46 @@ build/
 # Temporary files
 tmp/
 temp/
+docs-backup-*/
+*.bak
+
+# Root-level markdown files (except README.md and OSS standard files)
+/*.md
+!README.md
+!LICENSE
+!CONTRIBUTING.md
+!CODE_OF_CONDUCT.md
+!SECURITY.md
+!CHANGELOG.md
+
+# Development tools and AI assistants
+.bmad*
+.claude/
+.gemini/
+
+# All root-level dot files and directories (local development only)
+/.*
+!/.gitignore
+!/.github/
+
+# Proprietary server code (competitive advantage)
+relay/
+monitoring/
+tools/
+web-bundles/
+
+# Business and competitive documentation
+docs/business/
+docs/performance/
+docs/research/
+docs/prd.md
+docs/brief.md
+docs/architect-handoff.md
+docs/ux-expert-handoff.md
+docs/QUICK_START.md
+
+# Smart contract build artifacts
+contracts/artifacts/
+contracts/cache/
+contracts/typechain-types/
+contracts/node_modules/
