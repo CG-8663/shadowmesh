@@ -6,7 +6,7 @@ mode: connector  # listener or connector
 # Connection settings for direct P2P
 p2p:
   peer_address: "<UK_VPS_IP>:8443"  # Replace with actual UK VPS IP
-  tls_enabled: true
+  tls_enabled: false  # Disabled for testing - enable with proper certs in production
   tls_skip_verify: false
 
 # TAP device configuration
