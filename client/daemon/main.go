@@ -171,6 +171,13 @@ func main() {
 	log.Printf("Session parameters: MTU=%d, Heartbeat=%v, KeyRotation=%v",
 		sessionKeys.MTU, sessionKeys.HeartbeatInterval, sessionKeys.KeyRotationInterval)
 
+	// DEBUG: Log Epic 2 fields received from relay
+	log.Printf("DEBUG: PeerSupportsDirectP2P=%v, PeerTLSCert len=%d, PeerPublicIP=%v, PeerPublicPort=%d",
+		sessionKeys.PeerSupportsDirectP2P,
+		len(sessionKeys.PeerTLSCert),
+		sessionKeys.PeerPublicIP,
+		sessionKeys.PeerPublicPort)
+
 	// Epic 2: Initialize Direct P2P if peer supports it
 	var directP2PMgr *DirectP2PManager
 	if config.Mode == "relay" && sessionKeys.PeerSupportsDirectP2P {

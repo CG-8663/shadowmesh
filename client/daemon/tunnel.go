@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/shadowmesh/shadowmesh/shared/crypto"
 	"github.com/shadowmesh/shadowmesh/shared/protocol"
@@ -74,9 +76,10 @@ func NewTunnelManager(tap *TAPDevice, conn ConnectionInterface, sessionKeys *Ses
 
 // Start begins the tunnel data flow
 func (tm *TunnelManager) Start() {
-	tm.wg.Add(2)
+	tm.wg.Add(3)
 	go tm.tapToRelayLoop()
 	go tm.relayToTapLoop()
+	go tm.heartbeatLoop()
 }
 
 // Stop gracefully stops the tunnel
@@ -169,6 +172,41 @@ func (tm *TunnelManager) relayToTapLoop() {
 			default:
 				tm.stats.DroppedFrames.Add(1)
 			}
+		}
+	}
+}
+
+// heartbeatLoop sends periodic heartbeat messages to prevent relay disconnections
+func (tm *TunnelManager) heartbeatLoop() {
+	defer tm.wg.Done()
+
+	// Use the heartbeat interval from session keys
+	interval := tm.sessionKeys.HeartbeatInterval
+	if interval == 0 {
+		interval = 30 * time.Second // Default fallback
+	}
+
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	log.Printf("[DEBUG] Heartbeat loop started with interval %v", interval)
+
+	for {
+		select {
+		case <-tm.ctx.Done():
+			log.Printf("[DEBUG] Heartbeat loop stopped")
+			return
+
+		case <-ticker.C:
+			// Create and send heartbeat message
+			heartbeatMsg := protocol.NewHeartbeatMessage()
+
+			if err := tm.conn.SendMessage(heartbeatMsg); err != nil {
+				log.Printf("[DEBUG] Failed to send heartbeat: %v", err)
+				continue
+			}
+
+			log.Printf("[DEBUG] Sent heartbeat to relay")
 		}
 	}
 }
