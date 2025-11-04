@@ -313,14 +313,48 @@ func encodeEstablished(msg *EstablishedMessage) ([]byte, error) {
 		return nil, err
 	}
 
+	// Write new peer address fields
+	buf.Write(msg.PeerPublicIP[:])
+	if err := binary.Write(buf, binary.BigEndian, msg.PeerPublicPort); err != nil {
+		return nil, err
+	}
+
+	// Write boolean as a single byte
+	var peerSupportsByte byte
+	if msg.PeerSupportsDirectP2P {
+		peerSupportsByte = 1
+	}
+	if err := binary.Write(buf, binary.BigEndian, peerSupportsByte); err != nil {
+		return nil, err
+	}
+
+	// Write TLS certificate (variable length)
+	certLen := uint32(len(msg.PeerTLSCertificate))
+	if err := binary.Write(buf, binary.BigEndian, certLen); err != nil {
+		return nil, err
+	}
+	if certLen > 0 {
+		buf.Write(msg.PeerTLSCertificate)
+	}
+
+	// Write TLS certificate signature (variable length)
+	sigLen := uint32(len(msg.PeerTLSCertSignature))
+	if err := binary.Write(buf, binary.BigEndian, sigLen); err != nil {
+		return nil, err
+	}
+	if sigLen > 0 {
+		buf.Write(msg.PeerTLSCertSignature)
+	}
+
 	return buf.Bytes(), nil
 }
 
 func decodeEstablished(data []byte) (*EstablishedMessage, error) {
-	expectedSize := SessionIDSize + 4 + 4 + 2 + 4
+	// Minimum size without variable-length fields: 49 bytes + 4 (certLen) + 4 (sigLen) = 57 bytes
+	minSize := SessionIDSize + 4 + 4 + 2 + 4 + 16 + 2 + 1 + 4 + 4
 
-	if len(data) < expectedSize {
-		return nil, fmt.Errorf("invalid ESTABLISHED message size: got %d, expected %d", len(data), expectedSize)
+	if len(data) < minSize {
+		return nil, fmt.Errorf("invalid ESTABLISHED message size: got %d, expected at least %d", len(data), minSize)
 	}
 
 	msg := &EstablishedMessage{}
@@ -339,6 +373,49 @@ func decodeEstablished(data []byte) (*EstablishedMessage, error) {
 	offset += 2
 
 	msg.KeyRotationInterval = binary.BigEndian.Uint32(data[offset : offset+4])
+	offset += 4
+
+	// Read peer address fields
+	copy(msg.PeerPublicIP[:], data[offset:offset+16])
+	offset += 16
+
+	msg.PeerPublicPort = binary.BigEndian.Uint16(data[offset : offset+2])
+	offset += 2
+
+	peerSupportsByte := data[offset]
+	msg.PeerSupportsDirectP2P = peerSupportsByte != 0
+	offset += 1
+
+	// Read TLS certificate (variable length)
+	if offset+4 > len(data) {
+		return nil, fmt.Errorf("insufficient data for certificate length")
+	}
+	certLen := binary.BigEndian.Uint32(data[offset : offset+4])
+	offset += 4
+
+	if certLen > 0 {
+		if offset+int(certLen) > len(data) {
+			return nil, fmt.Errorf("insufficient data for certificate: expected %d bytes, got %d", certLen, len(data)-offset)
+		}
+		msg.PeerTLSCertificate = make([]byte, certLen)
+		copy(msg.PeerTLSCertificate, data[offset:offset+int(certLen)])
+		offset += int(certLen)
+	}
+
+	// Read TLS certificate signature (variable length)
+	if offset+4 > len(data) {
+		return nil, fmt.Errorf("insufficient data for signature length")
+	}
+	sigLen := binary.BigEndian.Uint32(data[offset : offset+4])
+	offset += 4
+
+	if sigLen > 0 {
+		if offset+int(sigLen) > len(data) {
+			return nil, fmt.Errorf("insufficient data for signature: expected %d bytes, got %d", sigLen, len(data)-offset)
+		}
+		msg.PeerTLSCertSignature = make([]byte, sigLen)
+		copy(msg.PeerTLSCertSignature, data[offset:offset+int(sigLen)])
+	}
 
 	return msg, nil
 }
@@ -472,15 +549,21 @@ func NewResponseMessage(sessionID [16]byte, proof [32]byte, capabilities uint32)
 
 // NewEstablishedMessage creates a new ESTABLISHED message
 func NewEstablishedMessage(sessionID [16]byte, serverCaps uint32, heartbeatInterval uint32,
-	mtu uint16, keyRotationInterval uint32) *Message {
+	mtu uint16, keyRotationInterval uint32, peerIP [16]byte, peerPort uint16, peerSupportsDirectP2P bool,
+	peerTLSCert []byte, peerTLSCertSig []byte) *Message {
 	return &Message{
 		Header: NewHeader(MsgTypeEstablished, FlagNone, 0),
 		Payload: &EstablishedMessage{
-			SessionID:           sessionID,
-			ServerCapabilities:  serverCaps,
-			HeartbeatInterval:   heartbeatInterval,
-			MTU:                 mtu,
-			KeyRotationInterval: keyRotationInterval,
+			SessionID:             sessionID,
+			ServerCapabilities:    serverCaps,
+			HeartbeatInterval:     heartbeatInterval,
+			MTU:                   mtu,
+			KeyRotationInterval:   keyRotationInterval,
+			PeerPublicIP:          peerIP,
+			PeerPublicPort:        peerPort,
+			PeerSupportsDirectP2P: peerSupportsDirectP2P,
+			PeerTLSCertificate:    peerTLSCert,
+			PeerTLSCertSignature:  peerTLSCertSig,
 		},
 	}
 }

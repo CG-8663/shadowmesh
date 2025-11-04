@@ -152,12 +152,24 @@ func TestEstablishedMessageEncodeDecode(t *testing.T) {
 	var sessionID [16]byte
 	copy(sessionID[:], []byte("test-session-id0"))
 
+	var peerIP [16]byte
+	copy(peerIP[:4], []byte{192, 168, 1, 100}) // Example IPv4: 192.168.1.100
+
+	// Example TLS certificate and signature (empty for test)
+	var peerTLSCert []byte
+	var peerTLSCertSig []byte
+
 	establishedMsg := NewEstablishedMessage(
 		sessionID,
 		CapMultiHop|CapObfuscation,
 		30,    // heartbeat interval
 		1500,  // MTU
 		3600,  // key rotation interval
+		peerIP,
+		45678, // peer port
+		true,  // supports direct P2P
+		peerTLSCert,    // TLS certificate
+		peerTLSCertSig, // TLS certificate signature
 	)
 
 	// Encode message

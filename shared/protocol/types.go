@@ -138,6 +138,15 @@ type EstablishedMessage struct {
 	HeartbeatInterval     uint32 // seconds
 	MTU                   uint16 // Maximum Transmission Unit
 	KeyRotationInterval   uint32 // seconds
+
+	// Peer endpoint information for direct P2P transition
+	PeerPublicIP          [16]byte // IPv4 or IPv6 address (IPv4 mapped in first 4 bytes)
+	PeerPublicPort        uint16   // Peer's public port
+	PeerSupportsDirectP2P bool     // Can this peer accept direct connections?
+
+	// TLS certificate for secure direct P2P (variable length)
+	PeerTLSCertificate    []byte // DER-encoded X.509 certificate
+	PeerTLSCertSignature  []byte // ML-DSA-87 signature of certificate
 }
 
 // HeartbeatMessage is an empty keepalive message
