@@ -152,6 +152,7 @@ func (ho *HandshakeOrchestrator) processEstablished(msg *protocol.Message) (*Ses
 	copy(rxKey[:], ho.handshakeState.RXKey)
 
 	sessionKeys := &SessionKeys{
+		// Epic 1: Original fields
 		SessionID:           establishedPayload.SessionID,
 		TXKey:               txKey,
 		RXKey:               rxKey,
@@ -159,6 +160,15 @@ func (ho *HandshakeOrchestrator) processEstablished(msg *protocol.Message) (*Ses
 		MTU:                 establishedPayload.MTU,
 		KeyRotationInterval: time.Duration(establishedPayload.KeyRotationInterval) * time.Second,
 		ServerCapabilities:  establishedPayload.ServerCapabilities,
+
+		// Epic 2: Direct P2P fields
+		PeerPublicIP:          establishedPayload.PeerPublicIP,
+		PeerPublicPort:        establishedPayload.PeerPublicPort,
+		PeerSupportsDirectP2P: establishedPayload.PeerSupportsDirectP2P,
+
+		// Epic 2: TLS certificate fields
+		PeerTLSCert:    establishedPayload.PeerTLSCertificate,
+		PeerTLSCertSig: establishedPayload.PeerTLSCertSignature,
 	}
 
 	return sessionKeys, nil
@@ -202,17 +212,6 @@ func (ho *HandshakeOrchestrator) waitForMessage(expectedType byte, timeout time.
 			return nil, fmt.Errorf("connection error during handshake: %w", err)
 		}
 	}
-}
-
-// SessionKeys contains the derived session keys and parameters
-type SessionKeys struct {
-	SessionID           [16]byte
-	TXKey               [32]byte // Transmission key
-	RXKey               [32]byte // Reception key
-	HeartbeatInterval   time.Duration
-	MTU                 uint16
-	KeyRotationInterval time.Duration
-	ServerCapabilities  uint32
 }
 
 // PerformKeyRotation performs a key rotation (re-handshake)

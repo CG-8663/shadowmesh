@@ -171,6 +171,67 @@ func main() {
 	log.Printf("Session parameters: MTU=%d, Heartbeat=%v, KeyRotation=%v",
 		sessionKeys.MTU, sessionKeys.HeartbeatInterval, sessionKeys.KeyRotationInterval)
 
+	// Epic 2: Initialize Direct P2P if peer supports it
+	var directP2PMgr *DirectP2PManager
+	if config.Mode == "relay" && sessionKeys.PeerSupportsDirectP2P {
+		log.Printf("DEBUG: Peer supports Direct P2P - initializing DirectP2PManager...")
+
+		// Step 1: Create TLS certificate manager
+		tlsCertMgr := NewTLSCertificateManager(sigKeys)
+
+		// Step 2: Generate ephemeral TLS certificate
+		localIP := "0.0.0.0" // Bind to all interfaces for listener
+		if err := tlsCertMgr.GenerateEphemeralCertificate(localIP); err != nil {
+			log.Printf("WARNING: Failed to generate TLS certificate: %v", err)
+			log.Printf("WARNING: Continuing with relay-only mode")
+		} else {
+			// Step 3: Pin peer's TLS certificate if provided
+			if len(sessionKeys.PeerTLSCert) > 0 {
+				if err := tlsCertMgr.PinPeerCertificate(sessionKeys.PeerTLSCert); err != nil {
+					log.Printf("WARNING: Failed to pin peer certificate: %v", err)
+					log.Printf("WARNING: Continuing with relay-only mode")
+				} else {
+					log.Printf("DEBUG: Peer certificate pinned successfully")
+
+					// Step 4: Create DirectP2PManager (requires relay connection manager)
+					if relayMgr, ok := connMgr.(*ConnectionManager); ok {
+						directP2PMgr = NewDirectP2PManager(relayMgr, tap, sessionKeys, tlsCertMgr)
+
+						// Step 5: Set peer address from ESTABLISHED message
+						directP2PMgr.SetPeerAddress(
+							sessionKeys.PeerPublicIP,
+							sessionKeys.PeerPublicPort,
+							sessionKeys.PeerSupportsDirectP2P,
+						)
+
+						log.Printf("DEBUG: DirectP2PManager initialized - peer at %s", directP2PMgr.GetPeerAddress())
+
+						// Step 6: Trigger transition from relay to direct P2P in background
+						// This allows daemon to continue running while attempting P2P transition
+						go func() {
+							log.Printf("DEBUG: Starting transition from relay to Direct P2P...")
+							if err := directP2PMgr.TransitionFromRelay(localIP); err != nil {
+								log.Printf("DEBUG: Direct P2P transition failed: %v", err)
+								log.Printf("DEBUG: Continuing with relay connection")
+							} else {
+								log.Printf("DEBUG: Successfully transitioned to Direct P2P")
+							}
+						}()
+
+						// Add cleanup handler
+						defer directP2PMgr.Stop()
+					} else {
+						log.Printf("WARNING: Connection manager is not relay type - cannot use Direct P2P")
+					}
+				}
+			} else {
+				log.Printf("DEBUG: Peer did not provide TLS certificate - relay-only mode")
+			}
+		}
+	} else if config.Mode == "relay" && !sessionKeys.PeerSupportsDirectP2P {
+		log.Printf("DEBUG: Peer does not support Direct P2P - using relay-only mode")
+	}
+
 	// Create tunnel manager
 	log.Println("Starting encrypted tunnel...")
 	tunnelMgr, err := NewTunnelManager(tap, connMgr, sessionKeys)
