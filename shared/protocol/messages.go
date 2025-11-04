@@ -122,6 +122,12 @@ func encodePayload(msgType byte, payload interface{}) ([]byte, error) {
 		return encodeError(payload.(*ErrorMessage))
 	case MsgTypeClose:
 		return encodeClose(payload.(*CloseMessage))
+	case MsgTypeRehandshakeRequest:
+		return encodeRehandshakeRequest(payload.(*RehandshakeRequestMessage))
+	case MsgTypeRehandshakeResponse:
+		return encodeRehandshakeResponse(payload.(*RehandshakeResponseMessage))
+	case MsgTypeRehandshakeComplete:
+		return encodeRehandshakeComplete(payload.(*RehandshakeCompleteMessage))
 	default:
 		return nil, fmt.Errorf("unsupported message type for encoding: 0x%02x", msgType)
 	}
@@ -148,6 +154,12 @@ func decodePayload(msgType byte, data []byte) (interface{}, error) {
 		return decodeError(data)
 	case MsgTypeClose:
 		return decodeClose(data)
+	case MsgTypeRehandshakeRequest:
+		return decodeRehandshakeRequest(data)
+	case MsgTypeRehandshakeResponse:
+		return decodeRehandshakeResponse(data)
+	case MsgTypeRehandshakeComplete:
+		return decodeRehandshakeComplete(data)
 	default:
 		return nil, fmt.Errorf("unsupported message type for decoding: 0x%02x", msgType)
 	}
@@ -615,4 +627,185 @@ func NewCloseMessage(code uint16, reason string) *Message {
 			ReasonString: reason,
 		},
 	}
+}
+
+// NewRehandshakeRequestMessage creates a new REHANDSHAKE_REQUEST message
+func NewRehandshakeRequestMessage(sessionID [SessionIDSize]byte, challenge [32]byte, timestamp uint64) *Message {
+	return &Message{
+		Header: NewHeader(MsgTypeRehandshakeRequest, FlagNone, 0),
+		Payload: &RehandshakeRequestMessage{
+			SessionID: sessionID,
+			Challenge: challenge,
+			Timestamp: timestamp,
+		},
+	}
+}
+
+// NewRehandshakeResponseMessage creates a new REHANDSHAKE_RESPONSE message
+func NewRehandshakeResponseMessage(sessionID [SessionIDSize]byte, challengeResponse [32]byte, challenge [32]byte, timestamp uint64) *Message {
+	return &Message{
+		Header: NewHeader(MsgTypeRehandshakeResponse, FlagNone, 0),
+		Payload: &RehandshakeResponseMessage{
+			SessionID:         sessionID,
+			ChallengeResponse: challengeResponse,
+			Challenge:         challenge,
+			Timestamp:         timestamp,
+		},
+	}
+}
+
+// NewRehandshakeCompleteMessage creates a new REHANDSHAKE_COMPLETE message
+func NewRehandshakeCompleteMessage(sessionID [SessionIDSize]byte, challengeResponse [32]byte, timestamp uint64) *Message {
+	return &Message{
+		Header: NewHeader(MsgTypeRehandshakeComplete, FlagNone, 0),
+		Payload: &RehandshakeCompleteMessage{
+			SessionID:         sessionID,
+			ChallengeResponse: challengeResponse,
+			Timestamp:         timestamp,
+		},
+	}
+}
+
+// REHANDSHAKE_REQUEST message encoding/decoding
+func encodeRehandshakeRequest(msg *RehandshakeRequestMessage) ([]byte, error) {
+	buf := new(bytes.Buffer)
+
+	// SessionID (16 bytes)
+	if err := binary.Write(buf, binary.BigEndian, msg.SessionID); err != nil {
+		return nil, err
+	}
+
+	// Challenge (32 bytes)
+	if err := binary.Write(buf, binary.BigEndian, msg.Challenge); err != nil {
+		return nil, err
+	}
+
+	// Timestamp (8 bytes)
+	if err := binary.Write(buf, binary.BigEndian, msg.Timestamp); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func decodeRehandshakeRequest(data []byte) (*RehandshakeRequestMessage, error) {
+	if len(data) < SessionIDSize+32+8 {
+		return nil, fmt.Errorf("insufficient data for REHANDSHAKE_REQUEST")
+	}
+
+	msg := &RehandshakeRequestMessage{}
+
+	offset := 0
+
+	// SessionID
+	copy(msg.SessionID[:], data[offset:offset+SessionIDSize])
+	offset += SessionIDSize
+
+	// Challenge
+	copy(msg.Challenge[:], data[offset:offset+32])
+	offset += 32
+
+	// Timestamp
+	msg.Timestamp = binary.BigEndian.Uint64(data[offset : offset+8])
+
+	return msg, nil
+}
+
+// REHANDSHAKE_RESPONSE message encoding/decoding
+func encodeRehandshakeResponse(msg *RehandshakeResponseMessage) ([]byte, error) {
+	buf := new(bytes.Buffer)
+
+	// SessionID (16 bytes)
+	if err := binary.Write(buf, binary.BigEndian, msg.SessionID); err != nil {
+		return nil, err
+	}
+
+	// ChallengeResponse (32 bytes)
+	if err := binary.Write(buf, binary.BigEndian, msg.ChallengeResponse); err != nil {
+		return nil, err
+	}
+
+	// Challenge (32 bytes)
+	if err := binary.Write(buf, binary.BigEndian, msg.Challenge); err != nil {
+		return nil, err
+	}
+
+	// Timestamp (8 bytes)
+	if err := binary.Write(buf, binary.BigEndian, msg.Timestamp); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func decodeRehandshakeResponse(data []byte) (*RehandshakeResponseMessage, error) {
+	if len(data) < SessionIDSize+32+32+8 {
+		return nil, fmt.Errorf("insufficient data for REHANDSHAKE_RESPONSE")
+	}
+
+	msg := &RehandshakeResponseMessage{}
+
+	offset := 0
+
+	// SessionID
+	copy(msg.SessionID[:], data[offset:offset+SessionIDSize])
+	offset += SessionIDSize
+
+	// ChallengeResponse
+	copy(msg.ChallengeResponse[:], data[offset:offset+32])
+	offset += 32
+
+	// Challenge
+	copy(msg.Challenge[:], data[offset:offset+32])
+	offset += 32
+
+	// Timestamp
+	msg.Timestamp = binary.BigEndian.Uint64(data[offset : offset+8])
+
+	return msg, nil
+}
+
+// REHANDSHAKE_COMPLETE message encoding/decoding
+func encodeRehandshakeComplete(msg *RehandshakeCompleteMessage) ([]byte, error) {
+	buf := new(bytes.Buffer)
+
+	// SessionID (16 bytes)
+	if err := binary.Write(buf, binary.BigEndian, msg.SessionID); err != nil {
+		return nil, err
+	}
+
+	// ChallengeResponse (32 bytes)
+	if err := binary.Write(buf, binary.BigEndian, msg.ChallengeResponse); err != nil {
+		return nil, err
+	}
+
+	// Timestamp (8 bytes)
+	if err := binary.Write(buf, binary.BigEndian, msg.Timestamp); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func decodeRehandshakeComplete(data []byte) (*RehandshakeCompleteMessage, error) {
+	if len(data) < SessionIDSize+32+8 {
+		return nil, fmt.Errorf("insufficient data for REHANDSHAKE_COMPLETE")
+	}
+
+	msg := &RehandshakeCompleteMessage{}
+
+	offset := 0
+
+	// SessionID
+	copy(msg.SessionID[:], data[offset:offset+SessionIDSize])
+	offset += SessionIDSize
+
+	// ChallengeResponse
+	copy(msg.ChallengeResponse[:], data[offset:offset+32])
+	offset += 32
+
+	// Timestamp
+	msg.Timestamp = binary.BigEndian.Uint64(data[offset : offset+8])
+
+	return msg, nil
 }

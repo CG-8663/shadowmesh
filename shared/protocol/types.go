@@ -29,6 +29,11 @@ const (
 	MsgTypeConfigUpdate  byte = 0x20
 	MsgTypeStatsRequest  byte = 0x21
 	MsgTypeStatsResponse byte = 0x22
+
+	// Direct P2P re-handshake messages (0x30-0x3F)
+	MsgTypeRehandshakeRequest  byte = 0x30
+	MsgTypeRehandshakeResponse byte = 0x31
+	MsgTypeRehandshakeComplete byte = 0x32
 )
 
 // Message flags (2 bytes)
@@ -192,6 +197,28 @@ type StatsResponseMessage struct {
 	StatsData []byte // JSON-encoded statistics
 }
 
+// RehandshakeRequestMessage initiates P2P re-handshake after direct connection
+type RehandshakeRequestMessage struct {
+	SessionID [SessionIDSize]byte // Session ID from relay handshake
+	Challenge [32]byte            // Random challenge nonce
+	Timestamp uint64              // Unix timestamp in milliseconds
+}
+
+// RehandshakeResponseMessage responds to re-handshake request
+type RehandshakeResponseMessage struct {
+	SessionID         [SessionIDSize]byte // Session ID from relay handshake
+	ChallengeResponse [32]byte            // HMAC of challenge using session TX key
+	Challenge         [32]byte            // Counter-challenge for mutual auth
+	Timestamp         uint64              // Unix timestamp in milliseconds
+}
+
+// RehandshakeCompleteMessage confirms re-handshake completion
+type RehandshakeCompleteMessage struct {
+	SessionID         [SessionIDSize]byte // Session ID from relay handshake
+	ChallengeResponse [32]byte            // HMAC of counter-challenge using session RX key
+	Timestamp         uint64              // Unix timestamp in milliseconds
+}
+
 // Message is a generic container for all message types
 type Message struct {
 	Header  Header
@@ -223,6 +250,12 @@ func MessageTypeName(msgType byte) string {
 		return "STATS_REQUEST"
 	case MsgTypeStatsResponse:
 		return "STATS_RESPONSE"
+	case MsgTypeRehandshakeRequest:
+		return "REHANDSHAKE_REQUEST"
+	case MsgTypeRehandshakeResponse:
+		return "REHANDSHAKE_RESPONSE"
+	case MsgTypeRehandshakeComplete:
+		return "REHANDSHAKE_COMPLETE"
 	case MsgTypeError:
 		return "ERROR"
 	case MsgTypeClose:
