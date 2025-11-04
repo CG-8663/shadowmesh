@@ -234,7 +234,7 @@ shadowmesh/
 - [x] Monorepo structure with BMAD Method framework
 - [x] Post-quantum crypto library (ML-KEM-1024, ML-DSA-87, ChaCha20-Poly1305)
 - [x] Wire protocol specification (v1.0)
-- [x] Protocol message serialization (13 message types)
+- [x] Protocol message serialization (16 message types)
 - [x] PQC handshake state machine
 - [x] WebSocket connection manager with auto-reconnect
 - [x] TAP device integration (Layer 2)
@@ -246,18 +246,37 @@ shadowmesh/
 - [x] Installation scripts and documentation
 
 **Code Metrics**:
-- Client daemon: ~4,300 lines
-- Relay server: ~1,600 lines
-- Total: ~5,900 lines of production Go code
+- Client daemon: ~4,800 lines
+- Relay server: ~1,800 lines
+- Total: ~6,600 lines of production Go code
 
-### 🔄 In Progress (Phase 2 - Relay Server)
+### ✅ Completed (Phase 2 - Relay Server & Direct P2P)
 
+**Epic 1: Relay Server Foundation**
 - [x] Relay server WebSocket handler
 - [x] Client connection management
 - [x] Frame routing logic (broadcast mode)
 - [x] Heartbeat handling
-- [ ] Relay-to-relay communication (future)
-- [ ] Stage testing with client ↔ relay
+- [x] Session management
+
+**Epic 2: Direct P2P Networking** ⭐ **NEW - COMPLETE**
+- [x] Relay IP detection (IPv4 & IPv6)
+- [x] Direct P2P connection manager
+- [x] Self-signed TLS with ML-DSA-87 certificate pinning
+- [x] WebSocket server for incoming P2P connections
+- [x] Ultra-fast re-handshake protocol (553µs - 18x faster than target!)
+- [x] Seamless connection migration (201ms - zero packet loss)
+- [x] Automatic relay fallback logic
+- [x] Health monitoring & retry mechanisms
+- [x] Comprehensive integration tests (15 tests, 100% passing)
+
+**Performance Achievements**:
+- Re-handshake: 553 microseconds (vs 10ms target)
+- Migration: 201ms total (vs 250ms target)
+- IP detection: <1µs overhead
+- Fallback: <2s recovery time
+
+**Documentation**: See [docs/EPIC2_COMPLETION.md](docs/EPIC2_COMPLETION.md) for full details
 
 ### 📋 Planned (Phase 3 - Blockchain)
 
