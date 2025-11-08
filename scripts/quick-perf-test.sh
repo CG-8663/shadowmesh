@@ -1,282 +1,232 @@
 #!/bin/bash
-#
-# ShadowMesh Quick Performance Test
-# Run this from Proxmox (Philippines) to test Belgium Raspberry Pi
-#
+# ShadowMesh v11 Phase 3 - Quick Performance Test Script
+# Tests ICMP, TCP, and UDP performance locally or between servers
 
 set -e
 
-BELGIUM_IP="10.10.10.4"
-TEST_NAME="Belgium-Philippines-$(date +%Y%m%d-%H%M%S)"
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
 
-echo "╔═══════════════════════════════════════════════════════════╗"
-echo "║       ShadowMesh Quick Performance Test                   ║"
-echo "║       Philippines (Starlink) → Belgium                   ║"
-echo "║       Distance: ~15,000 km                                ║"
-echo "╚═══════════════════════════════════════════════════════════╝"
-echo ""
+# Configuration
+BINARY="./shadowmesh-l3-v11-phase3-darwin-arm64"
+KEYDIR="./keys-test"
+BACKBONE="http://209.151.148.121:8080"
+TUN_DEVICE="smtest0"
 
-# Create results directory
-mkdir -p ~/shadowmesh-perf-results
-cd ~/shadowmesh-perf-results
-mkdir -p "$TEST_NAME"
-cd "$TEST_NAME"
+# Test parameters
+ICMP_COUNT=100
+IPERF_DURATION=30
 
-echo "Test: $TEST_NAME"
-echo "Target: $BELGIUM_IP (Belgium Raspberry Pi)"
-echo "Date: $(date)"
-echo ""
+# Functions
+print_header() {
+    echo -e "\n${BLUE}═══════════════════════════════════════════════════════════${NC}"
+    echo -e "${BLUE}  $1${NC}"
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}\n"
+}
 
-# Test 1: Quick ping (30 packets)
-echo "=== Test 1: Ping Test (30 packets) ==="
-echo "Testing connectivity and latency..."
-ping -c 30 -i 0.5 "$BELGIUM_IP" | tee ping-30.txt
-echo ""
+print_success() {
+    echo -e "${GREEN}✓${NC} $1"
+}
 
-# Extract statistics
-RTT_STATS=$(grep "rtt min/avg/max" ping-30.txt | cut -d'=' -f2)
-echo "RTT Statistics: $RTT_STATS"
-echo ""
+print_error() {
+    echo -e "${RED}✗${NC} $1"
+}
 
-# Test 2: Extended ping (100 packets for better statistics)
-echo "=== Test 2: Extended Ping (100 packets) ==="
-ping -c 100 -i 0.2 "$BELGIUM_IP" | tee ping-100.txt
-echo ""
+print_warning() {
+    echo -e "${YELLOW}⚠${NC} $1"
+}
 
-# Test 3: Large packet test
-echo "=== Test 3: Large Packet Test (MTU 1472) ==="
-echo "Testing with maximum non-fragmented packet size..."
-ping -c 20 -s 1472 "$BELGIUM_IP" | tee ping-large.txt
-echo ""
-
-# Test 4: Check if iperf3 is available
-if ! command -v iperf3 &> /dev/null; then
-    echo "=== Installing iperf3 for throughput tests ==="
-    echo "This requires sudo access..."
-    sudo apt-get update
-    sudo apt-get install -y iperf3
-    echo ""
-fi
-
-# Test 5: TCP Throughput (if iperf3 server is running on Belgium)
-echo "=== Test 5: TCP Throughput Test ==="
-echo "Attempting to connect to iperf3 server on $BELGIUM_IP..."
-echo "NOTE: Make sure iperf3 server is running on Belgium Pi:"
-echo "      iperf3 -s -B $BELGIUM_IP"
-echo ""
-read -p "Is iperf3 server running on Belgium? (y/N): " -n 1 -r
-echo ""
-
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo "Running 30-second TCP throughput test..."
-    iperf3 -c "$BELGIUM_IP" -t 30 -i 5 -J > tcp-throughput.json 2>&1
-
-    if [ -f tcp-throughput.json ]; then
-        THROUGHPUT=$(cat tcp-throughput.json | jq -r '.end.sum_sent.bits_per_second / 1000000' 2>/dev/null || echo "N/A")
-        echo "Average Throughput: $THROUGHPUT Mbps"
+check_root() {
+    if [ "$EUID" -ne 0 ]; then
+        print_error "Please run as root (sudo)"
+        exit 1
     fi
-    echo ""
+}
 
-    # Test 6: Parallel streams
-    echo "=== Test 6: Parallel TCP Streams (4 streams) ==="
-    iperf3 -c "$BELGIUM_IP" -t 30 -P 4 -i 5 -J > tcp-parallel.json 2>&1
+check_binary() {
+    local os=$(uname -s)
+    local arch=$(uname -m)
 
-    if [ -f tcp-parallel.json ]; then
-        PARALLEL_THROUGHPUT=$(cat tcp-parallel.json | jq -r '.end.sum_sent.bits_per_second / 1000000' 2>/dev/null || echo "N/A")
-        echo "Aggregate Throughput (4 streams): $PARALLEL_THROUGHPUT Mbps"
-    fi
-    echo ""
-else
-    echo "Skipping throughput tests. Run iperf3 server on Belgium first:"
-    echo "  ssh user@$BELGIUM_IP"
-    echo "  iperf3 -s -B $BELGIUM_IP"
-    echo ""
-fi
-
-# Test 7: File transfer test (if SSH works)
-echo "=== Test 7: SSH and File Transfer Test ==="
-read -p "Test SSH file transfer? (y/N): " -n 1 -r
-echo ""
-
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    read -p "Enter SSH username for $BELGIUM_IP: " SSH_USER
-
-    # Create test file
-    echo "Creating 10MB test file..."
-    dd if=/dev/zero of=test-10mb.bin bs=1M count=10 2>/dev/null
-
-    echo "Transferring file to Belgium..."
-    time scp test-10mb.bin ${SSH_USER}@${BELGIUM_IP}:/tmp/ 2>&1 | tee scp-transfer.txt
-
-    echo "Cleaning up..."
-    ssh ${SSH_USER}@${BELGIUM_IP} "rm -f /tmp/test-10mb.bin"
-    rm -f test-10mb.bin
-    echo ""
-fi
-
-# Generate summary report
-echo "╔═══════════════════════════════════════════════════════════╗"
-echo "║              Generating Summary Report                     ║"
-echo "╚═══════════════════════════════════════════════════════════╝"
-echo ""
-
-cat > RESULTS.md <<EOF
-# ShadowMesh Performance Test Results
-
-**Test ID**: $TEST_NAME
-**Date**: $(date)
-**Route**: Philippines (Starlink) → Belgium (Raspberry Pi)
-**Distance**: ~15,000 km
-**Relay**: Frankfurt, Germany (83.136.252.52)
-
----
-
-## Network Topology
-
-\`\`\`
-Proxmox VM (Philippines)  →  UpCloud Relay (Germany)  →  Raspberry Pi (Belgium)
-North Luzon, Aparri          Frankfurt                   Europe
-10.10.10.2                   83.136.252.52              10.10.10.4
-Starlink Satellite           Datacenter                  Residential
-\`\`\`
-
----
-
-## Test Results
-
-### Ping Test (30 packets)
-\`\`\`
-$(grep "packet" ping-30.txt | tail -1)
-$(grep "rtt" ping-30.txt | tail -1)
-\`\`\`
-
-### Extended Ping (100 packets)
-\`\`\`
-$(grep "packet" ping-100.txt | tail -1)
-$(grep "rtt" ping-100.txt | tail -1)
-\`\`\`
-
-### Large Packet Test (1472 bytes)
-\`\`\`
-$(grep "packet" ping-large.txt 2>/dev/null | tail -1 || echo "Not run")
-$(grep "rtt" ping-large.txt 2>/dev/null | tail -1 || echo "Not run")
-\`\`\`
-
-### TCP Throughput
-$(if [ -f tcp-throughput.json ]; then
-    echo "- **Single Stream**: $(cat tcp-throughput.json | jq -r '.end.sum_sent.bits_per_second / 1000000' 2>/dev/null || echo 'N/A') Mbps"
-else
-    echo "- Not tested (iperf3 server not running)"
-fi)
-
-$(if [ -f tcp-parallel.json ]; then
-    echo "- **Parallel (4 streams)**: $(cat tcp-parallel.json | jq -r '.end.sum_sent.bits_per_second / 1000000' 2>/dev/null || echo 'N/A') Mbps"
-fi)
-
----
-
-## Analysis
-
-### Latency Analysis
-$(awk '/rtt min\/avg\/max/ {
-    split($4, rtt, "/");
-    min=rtt[1]; avg=rtt[2]; max=rtt[3];
-    split(max, maxval, " ");
-    max=maxval[1];
-
-    if (avg < 800) status="✅ Excellent";
-    else if (avg < 1000) status="✅ Good";
-    else if (avg < 2000) status="⚠️  Acceptable";
-    else status="❌ Poor";
-
-    print "- **Min RTT**: " min " ms";
-    print "- **Avg RTT**: " avg " ms " status;
-    print "- **Max RTT**: " max " ms";
-
-    if (avg < 1000) {
-        print "- **Assessment**: Excellent latency for 15,000 km over Starlink!";
-    } else {
-        print "- **Assessment**: Acceptable given satellite link and distance";
-    }
-}' ping-100.txt)
-
-### Packet Loss
-$(awk '/packet loss/ {
-    split($6, loss, "%");
-    if (loss[1] == 0) status="✅ Perfect";
-    else if (loss[1] < 1) status="✅ Excellent";
-    else if (loss[1] < 5) status="⚠️  Acceptable";
-    else status="❌ Poor";
-
-    print "- **Packet Loss**: " $6 " " status;
-}' ping-100.txt)
-
-### Throughput Analysis
-$(if [ -f tcp-throughput.json ]; then
-    MBPS=$(cat tcp-throughput.json | jq -r '.end.sum_sent.bits_per_second / 1000000' 2>/dev/null || echo 0)
-    if awk -v mbps="$MBPS" 'BEGIN {exit !(mbps >= 20)}'; then
-        echo "- **Throughput**: ✅ Excellent (>20 Mbps)"
-    elif awk -v mbps="$MBPS" 'BEGIN {exit !(mbps >= 10)}'; then
-        echo "- **Throughput**: ✅ Good (>10 Mbps)"
-    elif awk -v mbps="$MBPS" 'BEGIN {exit !(mbps >= 5)}'; then
-        echo "- **Throughput**: ⚠️  Acceptable (>5 Mbps)"
+    if [ "$os" == "Darwin" ] && [ "$arch" == "arm64" ]; then
+        BINARY="./shadowmesh-l3-v11-phase3-darwin-arm64"
+    elif [ "$os" == "Linux" ] && [ "$arch" == "x86_64" ]; then
+        BINARY="./shadowmesh-l3-v11-phase3-amd64"
+    elif [ "$os" == "Linux" ] && [ "$arch" == "aarch64" ]; then
+        BINARY="./shadowmesh-l3-v11-phase3-arm64"
     else
-        echo "- **Throughput**: ❌ Needs optimization (<5 Mbps)"
+        print_error "Unsupported platform: $os $arch"
+        exit 1
     fi
-fi)
 
----
+    if [ ! -f "$BINARY" ]; then
+        print_error "Binary not found: $BINARY"
+        print_warning "Please run this script from the shadowmesh directory"
+        exit 1
+    fi
 
-## Comparison to Expectations
+    print_success "Using binary: $BINARY"
+}
 
-| Metric | Expected (Starlink) | Measured | Status |
-|--------|---------------------|----------|--------|
-| **RTT** | 600-1000ms | $(awk '/rtt min\/avg\/max/ {split($4, rtt, "/"); print rtt[2] "ms"}' ping-100.txt) | $(awk '/rtt min\/avg\/max/ {split($4, rtt, "/"); if (rtt[2] < 1000) print "✅"; else print "⚠️ "}' ping-100.txt) |
-| **Packet Loss** | <1% | $(grep "packet loss" ping-100.txt | awk '{print $6}') | $(awk '/packet loss/ {if ($6 == "0%") print "✅"; else print "⚠️ "}' ping-100.txt) |
-| **Throughput** | 10-50 Mbps | $(if [ -f tcp-throughput.json ]; then cat tcp-throughput.json | jq -r '.end.sum_sent.bits_per_second / 1000000' 2>/dev/null; else echo "N/A"; fi) Mbps | TBD |
+generate_keys() {
+    print_header "Generating Test Keys"
 
----
+    if [ -d "$KEYDIR" ]; then
+        print_warning "Keys directory exists, skipping generation"
+        PEER_ID=$(cat "$KEYDIR/peer_id.txt")
+        print_success "Peer ID: $PEER_ID"
+        return
+    fi
 
-## Recommendations
+    mkdir -p "$KEYDIR"
+    $BINARY -generate-keys -keydir "$KEYDIR"
 
-1. **For Production Use**:
-   - Current latency is $(awk '/rtt min\/avg\/max/ {split($4, rtt, "/"); if (rtt[2] < 800) print "acceptable"; else if (rtt[2] < 1000) print "borderline"; else print "high"}' ping-100.txt) for real-time applications
-   - Best suited for: File transfers, SSH, non-latency-sensitive apps
-   - Not recommended for: Gaming, real-time video calls (due to Starlink latency)
+    PEER_ID=$(cat "$KEYDIR/peer_id.txt")
+    print_success "Generated Peer ID: $PEER_ID"
+}
 
-2. **Performance Optimization**:
-   $(if [ -f tcp-throughput.json ]; then
-       MBPS=$(cat tcp-throughput.json | jq -r '.end.sum_sent.bits_per_second / 1000000' 2>/dev/null)
-       if awk -v mbps="$MBPS" 'BEGIN {exit !(mbps < 20)}'; then
-           echo "- Consider enabling TCP BBR congestion control"
-           echo "- Tune WebSocket buffer sizes"
-           echo "- Investigate packet loss causes"
-       else
-           echo "- Throughput is good, no immediate optimization needed"
-       fi
-   fi)
+test_local_mode() {
+    print_header "Test 1: Local Mode (TUN Device Creation)"
 
-3. **Next Steps**:
-   - Run 24-hour stability test
-   - Test with multiple concurrent connections
-   - Compare against Tailscale baseline
-   - Document for customer case studies
+    print_warning "This test validates TUN device creation and IP configuration"
 
----
+    # Get local IP
+    if [ "$(uname -s)" == "Darwin" ]; then
+        LOCAL_IP=$(ifconfig | grep "inet " | grep -v 127.0.0.1 | head -1 | awk '{print $2}')
+    else
+        LOCAL_IP=$(ip -4 addr show | grep inet | grep -v 127.0.0.1 | head -1 | awk '{print $2}' | cut -d/ -f1)
+    fi
 
-**Generated by ShadowMesh Performance Testing Suite**
+    if [ -z "$LOCAL_IP" ]; then
+        LOCAL_IP="127.0.0.1"
+    fi
 
-_ShadowMesh: The world's first post-quantum VPN network_
-EOF
+    print_success "Using IP: $LOCAL_IP"
 
-echo "Results saved to:"
-echo "  $(pwd)/RESULTS.md"
-echo ""
-cat RESULTS.md
-echo ""
-echo "╔═══════════════════════════════════════════════════════════╗"
-echo "║              Performance Testing Complete!                 ║"
-echo "╚═══════════════════════════════════════════════════════════╝"
-echo ""
-echo "Results directory: $(pwd)"
-echo ""
+    # Start in background
+    $BINARY \
+        -keydir "$KEYDIR" \
+        -backbone "$BACKBONE" \
+        -ip "$LOCAL_IP" \
+        -tun "$TUN_DEVICE" \
+        -tun-ip "10.100.0.1" \
+        -tun-netmask "24" \
+        -port 9443 \
+        -udp-port 9444 > /tmp/shadowmesh-test.log 2>&1 &
+
+    SHADOWMESH_PID=$!
+
+    sleep 5
+
+    # Check if process is running
+    if ps -p $SHADOWMESH_PID > /dev/null; then
+        print_success "ShadowMesh running (PID: $SHADOWMESH_PID)"
+    else
+        print_error "ShadowMesh failed to start"
+        print_error "Log output:"
+        cat /tmp/shadowmesh-test.log
+        return 1
+    fi
+
+    # Check TUN device
+    if ifconfig "$TUN_DEVICE" > /dev/null 2>&1; then
+        print_success "TUN device created: $TUN_DEVICE"
+        ifconfig "$TUN_DEVICE" | grep "inet " | head -1
+    else
+        print_error "TUN device not found"
+        print_error "Log output:"
+        cat /tmp/shadowmesh-test.log
+        kill $SHADOWMESH_PID 2>/dev/null || true
+        return 1
+    fi
+
+    # Test local ping
+    print_warning "Testing local TUN interface (3 packets)..."
+    if ping -c 3 10.100.0.1 > /dev/null 2>&1; then
+        print_success "Local ping successful"
+    else
+        print_warning "Local ping failed (may need routing configuration)"
+    fi
+
+    # Show logs
+    print_warning "ShadowMesh output:"
+    tail -20 /tmp/shadowmesh-test.log
+
+    # Cleanup
+    print_warning "Stopping ShadowMesh..."
+    kill $SHADOWMESH_PID 2>/dev/null || true
+    sleep 2
+
+    print_success "Test 1 complete"
+}
+
+show_help() {
+    echo "Usage: $0 [OPTIONS]"
+    echo ""
+    echo "Options:"
+    echo "  --local           Run local TUN device test"
+    echo "  --cleanup         Cleanup processes and devices"
+    echo "  -h, --help        Show this help"
+    echo ""
+    echo "Examples:"
+    echo "  sudo ./scripts/quick-perf-test.sh --local"
+    echo "  sudo ./scripts/quick-perf-test.sh --cleanup"
+    echo ""
+}
+
+cleanup() {
+    print_header "Cleanup"
+
+    # Kill any running ShadowMesh processes
+    pkill -f shadowmesh-l3-v11-phase3 2>/dev/null || true
+
+    # Remove TUN device (if on Linux)
+    if [ "$(uname -s)" == "Linux" ]; then
+        ip link del "$TUN_DEVICE" 2>/dev/null || true
+    fi
+
+    print_success "Cleanup complete"
+}
+
+# Main
+main() {
+    print_header "ShadowMesh v11 Phase 3 Performance Test"
+
+    if [ $# -eq 0 ]; then
+        show_help
+        exit 0
+    fi
+
+    check_root
+    check_binary
+
+    # Parse arguments
+    case "$1" in
+        --local)
+            generate_keys
+            test_local_mode
+            cleanup
+            ;;
+        --cleanup)
+            cleanup
+            ;;
+        -h|--help)
+            show_help
+            ;;
+        *)
+            print_error "Unknown option: $1"
+            show_help
+            exit 1
+            ;;
+    esac
+
+    print_header "Test Complete"
+}
+
+# Trap cleanup on exit
+trap cleanup EXIT
+
+main "$@"

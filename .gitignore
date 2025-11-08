@@ -111,6 +111,9 @@ beta-release/tests/results/
 # First release builds (distributed via GitHub Releases)
 first-release/bin/
 
+# Alpha build archive (historical development builds)
+.archive/
+
 # Smart contract build artifacts
 contracts/artifacts/
 contracts/cache/
