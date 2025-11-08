@@ -168,73 +168,43 @@ shadowmesh/
 - ✅ Using NIST-standardized PQC algorithms
 - ✅ Comprehensive unit tests and integration tests
 
-## 📊 Development Status
+## 📊 Development Roadmap
 
-### ✅ Completed (Phase 1 - Foundation)
+**Current Focus**: Sprint 0-2 - Kademlia DHT + PQC + QUIC Integration
 
-- [x] Monorepo structure with BMAD Method framework
-- [x] Post-quantum crypto library (ML-KEM-1024, ML-DSA-87, ChaCha20-Poly1305)
-- [x] Wire protocol specification (v1.0)
-- [x] Protocol message serialization (16 message types)
-- [x] PQC handshake state machine
-- [x] WebSocket connection manager with auto-reconnect
-- [x] TAP device integration (Layer 2)
-- [x] Frame encryption/decryption pipeline
-- [x] YAML configuration management
-- [x] Client daemon with signal handling
-- [x] Comprehensive unit tests (>90% crypto coverage)
-- [x] Integration tests (full handshake flow)
-- [x] Installation scripts and documentation
+ShadowMesh is transitioning to a fully decentralized architecture with standalone peer discovery:
 
-**Code Metrics**:
-- Client daemon: ~4,800 lines
-- Relay server: ~1,800 lines
-- Total: ~6,600 lines of production Go code
+### Sprint 0: Architecture POC (Weeks 1-2)
+- [ ] Kademlia DHT research and design
+- [ ] Bootstrap node strategy definition
+- [ ] PeerID generation from ML-DSA-87 keys
+- [ ] Local DHT testing (3-5 nodes)
 
-### ✅ Completed (Phase 2 - Relay Server & Direct P2P)
+### Sprint 1-2: Kademlia DHT Core (Weeks 3-6)
+- [ ] FIND_NODE iterative lookup
+- [ ] STORE operation with TTL
+- [ ] FIND_VALUE with caching
+- [ ] Routing table management (k-buckets)
+- [ ] NAT traversal integration
 
-**Epic 1: Relay Server Foundation**
-- [x] Relay server WebSocket handler
-- [x] Client connection management
-- [x] Frame routing logic (broadcast mode)
-- [x] Heartbeat handling
-- [x] Session management
+### Sprint 3-4: QUIC + PQC Integration (Weeks 7-10)
+- [ ] Merge v19 (QUIC) + v11 (PQC)
+- [ ] ML-KEM-1024 key exchange over QUIC
+- [ ] ML-DSA-87 signatures for peer authentication
+- [ ] ChaCha20-Poly1305 over QUIC streams
+- [ ] Layer 3 TUN device with QUIC
 
-**Epic 2: Direct P2P Networking** ⭐ **NEW - COMPLETE**
-- [x] Relay IP detection (IPv4 & IPv6)
-- [x] Direct P2P connection manager
-- [x] Self-signed TLS with ML-DSA-87 certificate pinning
-- [x] WebSocket server for incoming P2P connections
-- [x] Ultra-fast re-handshake protocol (553µs - 18x faster than target!)
-- [x] Seamless connection migration (201ms - zero packet loss)
-- [x] Automatic relay fallback logic
-- [x] Health monitoring & retry mechanisms
-- [x] Comprehensive integration tests (15 tests, 100% passing)
+### Sprint 5+: Standalone Operation (Weeks 11-18)
+- [ ] Zero central dependencies
+- [ ] Bootstrap from hardcoded peer list
+- [ ] Peer exchange via DHT gossip
+- [ ] Performance optimization (6-7 Gbps target)
+- [ ] Security audit preparation
+- [ ] Beta release (v1.0.0-beta.1)
 
-**Performance Achievements**:
-- Re-handshake: 553 microseconds (vs 10ms target)
-- Migration: 201ms total (vs 250ms target)
-- IP detection: <1µs overhead
-- Fallback: <2s recovery time
+**Full Roadmap**: See [docs/1-PRODUCT/ROADMAP.md](docs/1-PRODUCT/ROADMAP.md) for 18-week detailed plan.
 
-**Documentation**: See [docs/EPIC2_COMPLETION.md](docs/EPIC2_COMPLETION.md) for full details
-
-### 📋 Planned (Phase 3 - Blockchain)
-
-- [ ] Smart contract implementation (RelayNodeRegistry.sol)
-- [ ] Node registration and staking
-- [ ] TPM/SGX attestation verification
-- [ ] Reputation tracking and slashing
-
-### 🚀 Future (Phase 4 - Production)
-
-- [ ] Atomic clock synchronization protocol
-- [ ] Multi-hop routing (3-5 hops)
-- [ ] Traffic obfuscation with cover traffic
-- [ ] Prometheus + Grafana monitoring
-- [ ] Performance optimization (1+ Gbps)
-- [ ] Security audit
-- [ ] Production deployment
+**Historical Achievements**: See [docs/archive/](docs/archive/) for completed Epic 1, Epic 2, and v11 reports.
 
 ## 🧪 Testing
 
