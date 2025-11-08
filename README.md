@@ -51,82 +51,23 @@ This project is designed to investigate post-quantum DPN architectures and gathe
 - **Forward Secrecy**: Ephemeral session keys
 - **Replay Protection**: Monotonic counter-based frame numbering
 
-## 📦 Quick Installation
+## 🚀 Current Development Focus
 
-Install the ShadowMesh client with a single command:
+**Active Development**: Kademlia DHT + PQC + QUIC Integration
 
-```bash
-curl -sSL https://raw.githubusercontent.com/CG-8663/shadowmesh/main/scripts/install-client.sh | sudo bash
-```
+ShadowMesh is transitioning from centralized discovery to a fully decentralized peer-to-peer architecture:
 
-Or build from source:
+- **Standalone DHT**: Kademlia implementation for peer discovery (zero central dependencies)
+- **QUIC Transport**: Stream-based protocol replacing WebSocket
+- **PQC Integration**: Merging ML-KEM-1024 + ML-DSA-87 with QUIC transport
+- **Layer 3 Networking**: TUN device for IP-level routing
 
-```bash
-git clone https://github.com/CG-8663/shadowmesh.git
-cd shadowmesh
-make build-client
-sudo make install-client
-```
+**No Public Releases Yet**: Pre-built binaries will be available when v1.0.0 is published to GitHub Releases.
 
-See [docs/deployment/INSTALL.md](docs/deployment/INSTALL.md) for detailed installation instructions.
-
-## 🎯 Quick Start
-
-### Basic Usage
-
-```bash
-# Generate post-quantum keys
-shadowmesh-client --gen-keys
-
-# View configuration
-shadowmesh-client --show-config
-
-# Edit config to set your relay server URL
-nano ~/.shadowmesh/config.yaml
-
-# Run the client (requires root for TAP device)
-sudo shadowmesh-client
-```
-
-**Note**: Requires a compatible relay server. Relay server implementation is not included in this repository.
-
-### Local Testing
-
-For testing client-relay communication locally, see **[docs/deployment/STAGE_TESTING.md](docs/deployment/STAGE_TESTING.md)**.
-
-```bash
-# Quick local test:
-./scripts/generate-test-certs.sh test-certs  # Generate TLS certificates
-make build                                    # Build client + relay
-sudo ./build/shadowmesh-relay                 # Start relay server
-sudo ./build/shadowmesh-client                # Start client (in another terminal)
-```
-
-### Cloud Testing (Recommended)
-
-For production-like testing with UpCloud VM + Proxmox VM, see **[docs/deployment/DISTRIBUTED_TESTING.md](docs/deployment/DISTRIBUTED_TESTING.md)** or **[docs/deployment/UPCLOUD_DEPLOYMENT.md](docs/deployment/UPCLOUD_DEPLOYMENT.md)** for automated deployment.
-
-**Automated Deployment (upctl CLI):**
-```bash
-# Configure upctl
-upctl config set --key username=YOUR_USERNAME token=YOUR_TOKEN
-
-# Deploy relay server (auto-install via cloud-init)
-./scripts/deploy-upcloud.sh shadowmesh-relay de-fra1
-
-# On Proxmox VM (client):
-make build-client && scp bin/shadowmesh-client root@proxmox-vm:/usr/local/bin/
-```
-
-**Manual Deployment:**
-```bash
-# On UpCloud VM (relay):
-curl -sSL https://raw.githubusercontent.com/CG-8663/shadowmesh/main/scripts/install-relay.sh | sudo bash
-
-# On Proxmox VM (client):
-curl -sSL https://raw.githubusercontent.com/CG-8663/shadowmesh/main/scripts/install-client.sh | sudo bash
-# Then edit /etc/shadowmesh/config.yaml with your relay URL
-```
+For development roadmap and architecture details, see:
+- [18-Week Roadmap](docs/1-PRODUCT/ROADMAP.md)
+- [Architecture Overview](docs/2-ARCHITECTURE/README.md)
+- [Development Guidelines](docs/3-IMPLEMENTATION/DEVELOPMENT_GUIDELINES.md)
 
 ## 🏗️ Architecture
 
