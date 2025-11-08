@@ -88,15 +88,10 @@ monitoring/
 tools/
 web-bundles/
 
-# Business and competitive documentation
+# Business and competitive documentation (moved to organized structure)
 docs/business/
 docs/performance/
 docs/research/
-docs/prd.md
-docs/brief.md
-docs/architect-handoff.md
-docs/ux-expert-handoff.md
-docs/QUICK_START.md
 
 # CONFIDENTIAL - Project-private folder (infrastructure, credentials, test results)
 .project-private/
