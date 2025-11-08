@@ -62,8 +62,8 @@
 | Feature | Tailscale | ShadowMesh | Winner |
 |---------|-----------|------------|--------|
 | **P2P Direct Connections** | ✅ Yes | ✅ Yes | 🟰 Tie |
-| **NAT Traversal** | ✅ STUN/DERP relays | ⏳ Planned (STUN) | 🏆 Tailscale (mature) |
-| **Centralized Control** | ✅ Control server (tailscale.com) | ✅ Discovery backbone (self-hosted) | 🏆 ShadowMesh (self-hosted) |
+| **NAT Traversal** | ✅ STUN/DERP relays | ✅ Kademlia DHT + QUIC | 🏆 **ShadowMesh** (decentralized) |
+| **Centralized Control** | ✅ Control server (tailscale.com) | ❌ None (Kademlia DHT) | 🏆 **ShadowMesh** (zero dependencies) |
 | **Zero-Trust Exit Nodes** | ❌ No | ✅ TPM/SGX attestation | 🏆 **ShadowMesh** |
 | **Traffic Obfuscation** | ❌ No | ✅ WebSocket mimicry | 🏆 **ShadowMesh** |
 | **Multi-Hop Routing** | ❌ No (single hop) | ✅ 3-5 hops configurable | 🏆 **ShadowMesh** |
