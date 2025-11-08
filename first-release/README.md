@@ -43,57 +43,23 @@ first-release/
 
 ---
 
-## 🔧 Production Build Process
+## 📦 Release Binaries
 
-### Building Production Binaries
+**IMPORTANT**: Production binaries are built and published by the core development team only.
 
-```bash
-# Version variables
-VERSION="v1.0.0"
-BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-COMMIT=$(git rev-parse --short HEAD)
+### Available Platforms
+When releases are published, pre-built binaries will be available for:
+- **Linux**: AMD64 (x86_64), ARM64
+- **macOS**: ARM64 (Apple Silicon), AMD64 (Intel)
+- **Windows**: AMD64 (x86_64)
 
-# Build flags for production
-LDFLAGS="-X main.Version=${VERSION} -X main.BuildDate=${BUILD_DATE} -X main.Commit=${COMMIT} -s -w"
+### Download Locations
+Official binaries are distributed through:
+- **GitHub Releases**: https://github.com/shadowmesh/shadowmesh/releases
+- **Docker Hub**: `docker pull shadowmesh/client:v1.0.0`
+- **Package Managers**: (coming soon - Homebrew, APT, Chocolatey)
 
-# Build for all platforms
-make release VERSION=${VERSION}
-
-# Or manually:
-# Linux (AMD64)
-GOOS=linux GOARCH=amd64 go build -ldflags="${LDFLAGS}" -o first-release/bin/shadowmesh-client-linux-amd64 cmd/lightnode-l3-v20/main.go
-
-# macOS (ARM64 - Apple Silicon)
-GOOS=darwin GOARCH=arm64 go build -ldflags="${LDFLAGS}" -o first-release/bin/shadowmesh-client-darwin-arm64 cmd/lightnode-l3-v20/main.go
-
-# macOS (AMD64 - Intel)
-GOOS=darwin GOARCH=amd64 go build -ldflags="${LDFLAGS}" -o first-release/bin/shadowmesh-client-darwin-amd64 cmd/lightnode-l3-v20/main.go
-
-# Windows (AMD64)
-GOOS=windows GOARCH=amd64 go build -ldflags="${LDFLAGS}" -o first-release/bin/shadowmesh-client-windows-amd64.exe cmd/lightnode-l3-v20/main.go
-```
-
-### Code Signing
-```bash
-# macOS codesigning
-codesign --sign "Developer ID Application: Your Name" first-release/bin/shadowmesh-client-darwin-*
-
-# Windows signing (requires signtool.exe)
-signtool sign /f certificate.pfx /p password /tr http://timestamp.digicert.com first-release/bin/shadowmesh-client-windows-amd64.exe
-```
-
-### Creating Release Archives
-```bash
-# Linux
-tar -czf first-release/shadowmesh-${VERSION}-linux-amd64.tar.gz -C first-release/bin shadowmesh-client-linux-amd64
-
-# macOS
-tar -czf first-release/shadowmesh-${VERSION}-darwin-arm64.tar.gz -C first-release/bin shadowmesh-client-darwin-arm64
-tar -czf first-release/shadowmesh-${VERSION}-darwin-amd64.tar.gz -C first-release/bin shadowmesh-client-darwin-amd64
-
-# Windows
-zip first-release/shadowmesh-${VERSION}-windows-amd64.zip first-release/bin/shadowmesh-client-windows-amd64.exe
-```
+**Note**: Always verify checksums (SHA256SUMS) after downloading binaries.
 
 ---
 
