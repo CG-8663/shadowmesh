@@ -9,6 +9,14 @@ bin/
 /tmp/shadowmesh-client
 daemon
 
+# Version-specific binaries (all l2/l3 builds)
+shadowmesh-l2-*
+shadowmesh-l3-*
+lightnode-l3-*
+
+# Keys (development and testing)
+keys-mac/
+
 # Test binaries
 *.test
 *.out
@@ -89,6 +97,19 @@ docs/brief.md
 docs/architect-handoff.md
 docs/ux-expert-handoff.md
 docs/QUICK_START.md
+
+# CONFIDENTIAL - Project-private folder (infrastructure, credentials, test results)
+.project-private/
+
+# INTERNAL - Team workspace (planning, reports, meeting notes)
+.internal/
+
+# Beta release builds (not committed to public repo)
+beta-release/bin/
+beta-release/tests/results/
+
+# First release builds (distributed via GitHub Releases)
+first-release/bin/
 
 # Smart contract build artifacts
 contracts/artifacts/

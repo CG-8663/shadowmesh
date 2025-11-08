@@ -1,0 +1,45 @@
+# ShadowMesh Discovery Node Configuration
+# Copy this to /etc/shadowmesh/discovery.yaml and customize
+
+server:
+  http_port: 8080              # HTTP API port (health checks, stats)
+  https_port: 8443             # HTTPS WebSocket port (authentication)
+  tls_cert: "/etc/shadowmesh/tls/cert.pem"
+  tls_key: "/etc/shadowmesh/tls/key.pem"
+  region: "north_america"      # Region identifier (north_america, europe, asia_pacific, australia)
+
+database:
+  host: "localhost"
+  port: 5432
+  user: "shadowmesh"
+  password: "changeme"         # CHANGE THIS IN PRODUCTION
+  dbname: "shadowmesh"
+  sslmode: "disable"           # Use "require" in production
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""                 # Set if Redis has password authentication
+  db: 0
+  ttl: 300s                    # Cache TTL (5 minutes)
+
+discovery:
+  peer_id: "generate-random-peer-id"  # Replace with actual peer ID
+  k_bucket_size: 20            # Kademlia K parameter (peers per bucket)
+  refresh_interval: 3600s      # Bucket refresh interval (1 hour)
+  cleanup_interval: 3600s      # Stale peer cleanup interval (1 hour)
+  session_expiry: 24h          # Authentication session lifetime
+  challenge_expiry: 30s        # Challenge lifetime
+
+security:
+  require_auth: true           # Require authentication for peer lookups
+  allowed_origins:
+    - "*"                      # CORS origins (restrict in production)
+  rate_limit_per_min: 60       # Max requests per minute per IP
+  max_peers_per_ip: 10         # Max peers from single IP address
+
+logging:
+  level: "info"                # debug, info, warn, error
+  output_file: "/var/log/shadowmesh/discovery.log"
+  max_size_mb: 100             # Max log file size before rotation
+  max_backups: 3               # Max old log files to keep
