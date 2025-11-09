@@ -35,7 +35,7 @@ ShadowMesh is currently in alpha testing. The client implementation is feature-c
 
 ---
 
-ShadowMesh is a fully decentralized, quantum-safe VPN implementing NIST-standardized post-quantum cryptography. Unlike traditional VPNs with centralized control servers, ShadowMesh uses Kademlia DHT for peer discovery, eliminating all central dependencies. The project integrates quantum-resistant algorithms (ML-KEM-1024, ML-DSA-87) with QUIC transport for high-performance, reliable networking.
+ShadowMesh is a fully decentralized, quantum-safe DPN (Decentralized Private Network) implementing NIST-standardized post-quantum cryptography. Unlike proxy-based VPN services with centralized servers, ShadowMesh uses Kademlia DHT for peer discovery, eliminating all central dependencies and proxy infrastructure. The project integrates quantum-resistant algorithms (ML-KEM-1024, ML-DSA-87) with QUIC transport for high-performance, reliable networking.
 
 Currently transitioning from alpha builds (v11 UDP+PQC, v19 QUIC) to unified v20+ architecture with standalone Kademlia DHT operation.
 
@@ -281,7 +281,7 @@ make help
 - **[docs/architecture/PROJECT_SPEC.md](docs/architecture/PROJECT_SPEC.md)** - Technical specifications
 - **[docs/architecture/ENHANCED_SECURITY_SPECS.md](docs/architecture/ENHANCED_SECURITY_SPECS.md)** - Advanced security features
 - **[docs/architecture/ZERO_TRUST_ARCHITECTURE.md](docs/architecture/ZERO_TRUST_ARCHITECTURE.md)** - Zero-trust design
-- **[docs/architecture/SITE_TO_SITE_VPN_CONFIG.md](docs/architecture/SITE_TO_SITE_VPN_CONFIG.md)** - Site-to-site VPN setup
+- **[docs/architecture/SITE_TO_SITE_VPN_CONFIG.md](docs/architecture/SITE_TO_SITE_VPN_CONFIG.md)** - Site-to-site DPN configuration
 - **[docs/architecture/AWS_S3_KMS_TERRAFORM.md](docs/architecture/AWS_S3_KMS_TERRAFORM.md)** - Cloud infrastructure templates
 
 ## Potential Applications
@@ -299,6 +299,14 @@ This experimental implementation may be suitable for:
 - Mission-critical communications
 - Environments requiring security certifications
 - Use cases requiring guaranteed uptime or support
+
+**DPN vs VPN**: ShadowMesh is a **Decentralized Private Network (DPN)**, not a traditional VPN service. Key differences:
+- ❌ No proxy servers routing your traffic
+- ❌ No centralized infrastructure to compromise
+- ❌ No trust required in third-party VPN providers
+- ✅ Peer-to-peer encrypted tunnels only
+- ✅ Full decentralization with Kademlia DHT
+- ✅ Post-quantum cryptographic security
 
 ## 🤝 Contributing
 
@@ -326,7 +334,7 @@ This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDU
 
 ## Security Considerations
 
-**Alpha Status**: This software is experimental DPN technology and has not undergone independent security audit. Use at your own risk.
+**Alpha Status**: This software is experimental DPN (Decentralized Private Network) technology and has not undergone independent security audit. Use at your own risk.
 
 - **Reporting vulnerabilities**: See [SECURITY.md](SECURITY.md) for responsible disclosure
 - **Do NOT** open public issues for security vulnerabilities
