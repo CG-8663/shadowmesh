@@ -642,4 +642,4 @@ quic:
 
 **Next Steps**: Begin Kademlia DHT implementation (Sprint 0) to build foundation for zero-server peer discovery.
 
-**Reference**: See [MIGRATION_PATH.md](MIGRATION_PATH.md) for 18-week roadmap to v1.0.0.
+**Reference**: See [MIGRATION_PATH.md](../../docs/2-ARCHITECTURE/MIGRATION_PATH.md) for 18-week roadmap to v1.0.0.
