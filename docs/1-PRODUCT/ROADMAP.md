@@ -149,7 +149,7 @@ ShadowMesh is progressing through a phased development approach, building a post
 | Fallback recovery | N/A | <2s | ✅ Fast |
 | Test coverage | >80% | 100% | ✅ Excellent |
 
-**Documentation**: See [docs/EPIC2_COMPLETION.md](EPIC2_COMPLETION.md) for full details
+**Documentation**: See [docs/archive/epic2/EPIC2_COMPLETION.md](../archive/epic2/EPIC2_COMPLETION.md) for full details
 
 ---
 
@@ -354,12 +354,12 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for detailed guidelines.
 ## Resources
 
 ### Documentation
-- [Epic 2 Completion Summary](EPIC2_COMPLETION.md)
-- [Story 3a: TLS + Certificate Pinning](EPIC2_STORY3A_COMPLETION.md)
-- [Story 3c: Re-Handshake Protocol](EPIC2_STORY3C_COMPLETION.md)
-- [Story 3d: Seamless Migration](EPIC2_STORY3D_COMPLETION.md)
-- [Story 4: Relay IP Detection](EPIC2_STORY4_COMPLETION.md)
-- [Story 5: Relay Fallback Logic](EPIC2_STORY5_COMPLETION.md)
+- [Epic 2 Completion Summary](../archive/epic2/EPIC2_COMPLETION.md)
+- [Story 3: Direct P2P Implementation](../archive/epic2/EPIC2_STORY3_COMPLETION.md)
+- [Story 3c: Re-Handshake Protocol](../archive/epic2/EPIC2_STORY3C_COMPLETION.md)
+- [Story 3d: Seamless Migration](../archive/epic2/EPIC2_STORY3D_COMPLETION.md)
+- [Story 4: Relay IP Detection](../archive/epic2/EPIC2_STORY4_COMPLETION.md)
+- [Story 5: Relay Fallback Logic](../archive/epic2/EPIC2_STORY5_COMPLETION.md)
 
 ### Architecture
 - [Protocol Specification](../shared/protocol/PROTOCOL_SPEC.md)
