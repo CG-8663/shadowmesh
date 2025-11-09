@@ -28,28 +28,28 @@ ShadowMesh is currently in alpha testing. The client implementation is feature-c
 - Cloud VMs (UpCloud, Proxmox)
 
 **Known Limitations**:
-- Alpha software - expect breaking changes
-- Relay server not included (proprietary)
+- Alpha development phase - transitioning to Kademlia DHT
 - No formal security audit completed
-- Limited platform testing (Linux only)
+- Limited platform testing (Linux, macOS ARM64)
+- Performance optimization ongoing (target: 6-7 Gbps)
 
 ---
 
-ShadowMesh is an experimental Decentralized Private Network (DPN) client implementing NIST-standardized post-quantum cryptography. Unlike traditional VPNs with centralized trust models, ShadowMesh explores a decentralized architecture where relay nodes are verified via blockchain attestation. The project integrates quantum-resistant algorithms (ML-KEM-1024, ML-DSA-87) in a practical Layer 2 implementation using TAP devices for Ethernet-level encryption.
+ShadowMesh is a fully decentralized, quantum-safe VPN implementing NIST-standardized post-quantum cryptography. Unlike traditional VPNs with centralized control servers, ShadowMesh uses Kademlia DHT for peer discovery, eliminating all central dependencies. The project integrates quantum-resistant algorithms (ML-KEM-1024, ML-DSA-87) with QUIC transport for high-performance, reliable networking.
 
-This project is designed to investigate post-quantum DPN architectures and gather community feedback on the decentralized trust model.
+Currently transitioning from alpha builds (v11 UDP+PQC, v19 QUIC) to unified v20+ architecture with standalone Kademlia DHT operation.
 
 ## Implementation Features
 
-- **Post-Quantum Cryptography**: Implements ML-KEM-1024 (NIST FIPS 203) and ML-DSA-87 (NIST FIPS 204)
-- **Hybrid Mode**: Combines post-quantum algorithms with classical X25519/Ed25519
-- **Layer 2 DPN**: TAP device implementation for Ethernet frame encryption
-- **Decentralized Trust**: Blockchain-based relay node verification (planned)
+- **Post-Quantum Cryptography**: ML-KEM-1024 (NIST FIPS 203), ML-DSA-87 (NIST FIPS 204)
+- **Kademlia DHT**: Decentralized peer discovery (zero central servers)
+- **QUIC Transport**: Reliable, low-latency stream protocol
+- **Hybrid Mode**: Classical (X25519, Ed25519) + PQC for defense in depth
+- **Layer 3 Networking**: TUN device for IP-level routing
 - **Symmetric Encryption**: ChaCha20-Poly1305 (IETF RFC 8439)
-- **Key Rotation**: Configurable rotation intervals (10 seconds to 1 hour)
-- **Transport**: WebSocket over TLS 1.3
+- **PeerID Generation**: Derived from ML-DSA-87 public keys (SHA256)
 - **Forward Secrecy**: Ephemeral session keys
-- **Replay Protection**: Monotonic counter-based frame numbering
+- **Standalone Operation**: No infrastructure dependencies
 
 ## 🚀 Current Development Focus
 
@@ -253,36 +253,26 @@ go tool cover -html=coverage.txt
 
 ## 🛠️ Build Commands
 
+**Note**: No public builds until v1.0.0 release. Development builds for contributors only.
+
 ```bash
-# Build client only
-make build-client
-
-# Build relay server
-make build-relay
-
-# Build all components (client + relay)
-make build
-
-# Install client to /usr/local/bin
-sudo make install-client
-
-# Run relay server (requires config and keys)
-./build/shadowmesh-relay --gen-keys    # Generate relay keys
-./build/shadowmesh-relay --show-config # View configuration
-sudo ./build/shadowmesh-relay          # Start relay server
-
-# Run tests
+# Run tests (development)
 make test
+go test ./...
 
 # Format code
 make fmt
+go fmt ./...
 
 # Run linter
 make lint
+golangci-lint run
 
 # View all commands
 make help
 ```
+
+**For Contributors**: See [docs/3-IMPLEMENTATION/DEVELOPMENT_GUIDELINES.md](docs/3-IMPLEMENTATION/DEVELOPMENT_GUIDELINES.md) for development setup.
 
 ## 📖 Documentation
 
