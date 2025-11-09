@@ -52,7 +52,7 @@ The ShadowMesh network is officially named **The Nexus**. This designation refle
 - **Tailscale**: Centralized coordination server (control plane)
 - **ZeroTier**: Centralized root servers + planet/moon infrastructure
 
-**ShadowMesh Advantage**: Fully decentralized, no single point of failure, zero operational costs.
+**ShadowMesh Advantage**: Fully decentralized, no single point of failure, token-based operational model (gas + storage fees via Chronara tokens).
 
 ---
 
@@ -493,17 +493,29 @@ quic:
 
 ---
 
-### ShadowMesh: Zero-Infrastructure P2P
+### ShadowMesh: Decentralized Token-Based P2P
 
 **ShadowMesh Provides**:
 - 3-5 bootstrap nodes (temporary, for initial DHT entry)
 - Open-source client software
 - DHT-based peer discovery (decentralized)
+- Blockchain-based relay verification (The Federation Registry)
 
-**User Cost**: **$0** (forever, no paid tiers)
-**Dependency**: **None** (after joining DHT via bootstrap)
+**User Cost**:
+- **Personal**: $10/month subscription + Chronara tokens for gas/storage fees
+- **Business**: $30/user/month + Chronara tokens
+- **Enterprise**: $100/user/month + Chronara tokens
+- **Custom Implementations**: $10/client/month
 
-**Operational Cost**: $0/year (no servers after bootstrap)
+**Token Requirements**:
+- **Gas Fees**: 10-50 CHRONARA/month for blockchain operations
+- **Database Fees**: 0.1 CHRONARA per GB/month for DHT storage
+- **Interconnect Fees**: 0.01 CHRONARA per GB transferred via relay fallback
+- **Relay Staking**: 100-1000 CHRONARA (one-time) to operate an Avenger relay node
+
+**Dependency**: Bootstrap nodes for initial DHT entry, Chronara tokens for network operations
+
+**Operational Cost**: Token-based (gas + storage + bandwidth costs)
 
 ---
 
@@ -612,14 +624,19 @@ quic:
 | Feature | WireGuard | Tailscale | ZeroTier | ShadowMesh |
 |---------|-----------|-----------|----------|------------|
 | **Quantum-Safe** | ❌ | ❌ | ❌ | ✅ |
-| **Decentralized** | ⚠️ Manual | ❌ | ❌ | ✅ |
-| **Zero Infrastructure Cost** | ✅ | ❌ | ❌ | ✅ |
+| **Decentralized** | ⚠️ Manual | ❌ | ❌ | ✅ DHT |
+| **Pricing (Personal)** | Free | Free* | Free* | **$10/mo** + tokens |
+| **Pricing (Business)** | N/A | $6-18/user | $50-500/mo | **$30/user** + tokens |
+| **Pricing (Enterprise)** | N/A | Custom | Custom | **$100/user** + tokens |
 | **Auto Peer Discovery** | ❌ | ✅ | ✅ | ✅ |
-| **No Central Dependency** | ✅ | ❌ | ❌ | ✅ |
+| **No Central Dependency** | ✅ | ❌ | ❌ | ⚠️ Bootstrap |
 | **Throughput Target** | 1 Gbps | 1 Gbps | 500 Mbps | **6-7 Gbps** |
+| **Token Economy** | ❌ | ❌ | ❌ | ✅ Chronara |
 | **Open Source** | ✅ | ⚠️ Client | ⚠️ Client | ✅ Full |
 
-**ShadowMesh**: The only fully decentralized, quantum-safe, zero-cost VPN with automatic peer discovery.
+*Free tiers have limitations
+
+**ShadowMesh**: The only fully decentralized, quantum-safe VPN with blockchain-verified relay nodes and token-based economics.
 
 ---
 

@@ -276,18 +276,6 @@ make help
 
 ## 📖 Documentation
 
-### 🚀 Getting Started
-- **[docs/guides/GETTING_STARTED.md](docs/guides/GETTING_STARTED.md)** - Complete getting started guide
-- **[docs/guides/QUICK_REFERENCE.md](docs/guides/QUICK_REFERENCE.md)** - Common commands cheatsheet
-- **[docs/guides/NEXT_STEPS.md](docs/guides/NEXT_STEPS.md)** - Roadmap and next actions
-
-### 📦 Deployment
-- **[docs/deployment/INSTALL.md](docs/deployment/INSTALL.md)** - Installation guide
-- **[docs/deployment/STAGE_TESTING.md](docs/deployment/STAGE_TESTING.md)** - Local testing (localhost)
-- **[docs/deployment/DISTRIBUTED_TESTING.md](docs/deployment/DISTRIBUTED_TESTING.md)** - Cloud testing (UpCloud + Proxmox)
-- **[docs/deployment/UPCLOUD_DEPLOYMENT.md](docs/deployment/UPCLOUD_DEPLOYMENT.md)** - Automated UpCloud deployment
-- **[docs/deployment/UPDATE_CLIENTS.md](docs/deployment/UPDATE_CLIENTS.md)** - Update client scripts
-
 ### 🏗️ Architecture
 - **[shared/protocol/PROTOCOL_SPEC.md](shared/protocol/PROTOCOL_SPEC.md)** - Wire protocol specification
 - **[docs/architecture/PROJECT_SPEC.md](docs/architecture/PROJECT_SPEC.md)** - Technical specifications

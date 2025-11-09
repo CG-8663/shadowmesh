@@ -561,8 +561,9 @@ bootstrap_nodes:
 1. **Kademlia DHT** for zero-dependency peer discovery
 2. **QUIC + PQC** for quantum-resistant, reliable transport
 3. **6-7 Gbps throughput** with <2ms latency overhead
-4. **Standalone operation** from first boot (no servers needed)
-5. **$0 infrastructure cost** (community-run bootstrap nodes)
+4. **Standalone operation** from first boot (bootstrap nodes only)
+5. **Token-based economics** (Chronara tokens for gas, storage, bandwidth)
+6. **Subscription model** ($10/mo personal, $30/user business, $100/user enterprise)
 
 ### Why This Matters
 
