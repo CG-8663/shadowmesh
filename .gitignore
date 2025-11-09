@@ -99,6 +99,10 @@ docs/research/
 # INTERNAL - Team workspace (planning, reports, meeting notes)
 .internal/
 
+# Strategic planning docs (keep private until public launch)
+docs/1-PRODUCT/OPEN_SOURCE_PLAN.md
+docs/1-PRODUCT/GITHUB_RELEASE_SUMMARY.md
+
 # Beta release builds (not committed to public repo)
 beta-release/bin/
 beta-release/tests/results/
