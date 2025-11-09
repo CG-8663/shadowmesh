@@ -37,7 +37,7 @@ class DiscoveryHandler(BaseHTTPRequestHandler):
                 data = json.loads(body.decode('utf-8'))
 
                 peer_id = data.get('peer_id')
-                ip = data.get('ip')
+                ip = data.get('ip') or data.get('ip_address')  # Accept both 'ip' and 'ip_address'
                 port = data.get('port', 8443)
                 is_public = data.get('is_public', False)
 
@@ -57,7 +57,8 @@ class DiscoveryHandler(BaseHTTPRequestHandler):
                     'registered_at': peers[peer_id]['registered_at'] if peer_id in peers else now
                 }
 
-                self.send_response(200)
+                # Return 201 Created for successful registration
+                self.send_response(201)
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
                 response = {
@@ -75,8 +76,33 @@ class DiscoveryHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 self.send_error(500, str(e))
 
+        elif self.path == '/api/auth/verify':
+            # Verify signed challenge - just accept everything for v0.1.0
+            try:
+                content_length = int(self.headers.get('Content-Length', 0))
+                body = self.rfile.read(content_length) if content_length > 0 else b'{}'
+                data = json.loads(body.decode('utf-8'))
+
+                peer_id = data.get('peer_id', 'unknown')
+
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                response = {
+                    'status': 'ok',
+                    'message': 'Authentication successful',
+                    'session_token': f'session-{peer_id}-{int(time.time())}',
+                    'authenticated': True
+                }
+                self.wfile.write(json.dumps(response).encode('utf-8'))
+
+                self.log_message(f"Authenticated peer {peer_id[:16]}...")
+
+            except Exception as e:
+                self.send_error(500, str(e))
+
         elif self.path == '/authenticate' or self.path == '/api/auth/authenticate':
-            # Simple authentication - just accept everything for v0.1.0
+            # Legacy authentication endpoint - redirect to verify
             try:
                 content_length = int(self.headers.get('Content-Length', 0))
                 body = self.rfile.read(content_length) if content_length > 0 else b'{}'
@@ -104,7 +130,66 @@ class DiscoveryHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         """Handle peer discovery and status endpoints"""
-        if self.path == '/peers' or self.path == '/api/peers':
+        if self.path.startswith('/api/peers/lookup'):
+            try:
+                # Parse query parameters
+                from urllib.parse import urlparse, parse_qs
+                parsed = urlparse(self.path)
+                params = parse_qs(parsed.query)
+
+                peer_id = params.get('peer_id', [None])[0]
+                count = int(params.get('count', [10])[0])
+
+                if not peer_id:
+                    self.send_error(400, "Missing peer_id parameter")
+                    return
+
+                # Find matching peers (in simple version, just return the requested peer if it exists)
+                now = time.time()
+                stale_timeout = 300  # 5 minutes
+
+                matching_peers = []
+                if peer_id in peers and (now - peers[peer_id]['last_seen'] < stale_timeout):
+                    matching_peers.append({
+                        'peer_id': peers[peer_id]['peer_id'],
+                        'ip_address': peers[peer_id]['ip'],
+                        'port': peers[peer_id]['port'],
+                        'is_public': peers[peer_id]['is_public']
+                    })
+
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                response = {
+                    'peers': matching_peers,
+                    'count': len(matching_peers)
+                }
+                self.wfile.write(json.dumps(response).encode('utf-8'))
+
+                self.log_message(f"Peer lookup for {peer_id[:16]}... returned {len(matching_peers)} peers")
+
+            except Exception as e:
+                self.send_error(500, str(e))
+
+        elif self.path == '/api/auth/challenge':
+            # Return a simple challenge for authentication
+            try:
+                import secrets
+                challenge = secrets.token_hex(32)  # 64-char hex string
+
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                response = {
+                    'challenge': challenge,
+                    'timestamp': int(time.time())
+                }
+                self.wfile.write(json.dumps(response).encode('utf-8'))
+
+            except Exception as e:
+                self.send_error(500, str(e))
+
+        elif self.path == '/peers' or self.path == '/api/peers':
             try:
                 # Remove stale peers (not seen in 5 minutes)
                 now = time.time()
