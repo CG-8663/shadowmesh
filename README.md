@@ -14,14 +14,18 @@
 
 ---
 
+> **📋 MASTER ROADMAP (Single Source of Truth):**
+> **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - Complete project status, roadmap, timeline, and metrics
+> **[STATUS.md](STATUS.md)** - Quick 30-second status overview
+
+---
+
 ## Project Status
 
 **Current Version**: v0.1.0-alpha (Released)
 **Next Version**: v0.2.0-alpha (In Development - DHT Migration)
 **Status**: Active Development - Sprint 0 (Week 1 of 4)
 **Last Updated**: November 10, 2025
-
-📊 **[View Full Project Status & Roadmap](PROJECT_STATUS.md)** | 🚀 **[Quick Status](STATUS.md)**
 
 ### Recent Achievements (v0.1.0-alpha)
 - ✅ 28.3 Mbps throughput (45% faster than Tailscale)
@@ -76,8 +80,10 @@ ShadowMesh is transitioning from centralized discovery to a fully decentralized 
 **No Public Releases Yet**: Pre-built binaries will be available when v1.0.0 is published to GitHub Releases.
 
 For development roadmap and architecture details, see:
-- [18-Week Roadmap](docs/1-PRODUCT/ROADMAP.md)
-- [Architecture Overview](docs/2-ARCHITECTURE/README.md)
+- **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - Master roadmap (single source of truth)
+- [Kademlia DHT Architecture](docs/2-ARCHITECTURE/KADEMLIA_DHT_ARCHITECTURE.md)
+- [DHT Implementation Tickets](docs/3-IMPLEMENTATION/DHT_IMPLEMENTATION_TICKETS.md)
+- [Migration Path](docs/2-ARCHITECTURE/MIGRATION_PATH.md)
 - [Development Guidelines](docs/3-IMPLEMENTATION/DEVELOPMENT_GUIDELINES.md)
 
 ## 🏗️ Architecture
