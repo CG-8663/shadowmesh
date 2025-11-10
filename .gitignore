@@ -9,6 +9,10 @@ bin/
 /tmp/shadowmesh-client
 daemon
 
+# Root-level binaries (keep private)
+/cli
+/demo-p2p
+
 # Version-specific binaries (all l2/l3 builds)
 shadowmesh-l2-*
 shadowmesh-l3-*
@@ -23,6 +27,13 @@ keys-mac/
 
 # Go workspace file
 go.work
+
+# Go module files (keep private until release)
+/go.mod
+/go.sum
+
+# Build files (keep private until release)
+/Makefile
 
 # Dependencies
 vendor/
