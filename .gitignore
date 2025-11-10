@@ -8,38 +8,33 @@ bin/
 /relay/server/shadowmesh-relay
 /tmp/shadowmesh-client
 daemon
-
-# Root-level binaries (keep private)
 /cli
 /demo-p2p
-
-# Version-specific binaries (all l2/l3/v* builds)
 shadowmesh-l2-*
 shadowmesh-l3-*
 shadowmesh-v*
 lightnode-l3-*
 lightnode-v*
 
-# Keys (development and testing - NEVER commit these!)
+# Keys
 keys-mac/
 keys-node-*/
 keys-*/
+*.key
+*.pem
+*.p12
+keys/
+.shadowmesh/keys/
 
 # Test binaries
 *.test
 *.out
 
-# Go workspace file
+# Go
 go.work
-
-# Go module files (keep private until release)
 /go.mod
 /go.sum
-
-# Build files (keep private until release)
 /Makefile
-
-# Dependencies
 vendor/
 
 # IDE
@@ -53,18 +48,11 @@ vendor/
 .DS_Store
 Thumbs.db
 
-# Configuration (keep all configs private for local development)
+# Configuration
 /config/
 /configs/
 config.yaml
 *.local.yaml
-
-# Keys and secrets
-*.key
-*.pem
-*.p12
-keys/
-.shadowmesh/keys/
 
 # Logs
 *.log
@@ -80,7 +68,7 @@ temp/
 docs-backup-*/
 *.bak
 
-# Root-level markdown files (except README.md and OSS standard files)
+# Root-level markdown files
 /*.md
 !README.md
 !LICENSE
@@ -89,7 +77,7 @@ docs-backup-*/
 !SECURITY.md
 !CHANGELOG.md
 
-# Private documentation (keep local until release)
+# Documentation
 docs/1-PRODUCT/
 docs/2-ARCHITECTURE/
 docs/3-IMPLEMENTATION/
@@ -100,53 +88,16 @@ docs/benchmarks/
 docs/prd.md
 docs/README.md
 
-# Redundant/archived release directories
+# Releases
 beta-release/
 first-release/
 
-# Development tools and AI assistants
+# Development tools
 .bmad*
 .claude/
 .gemini/
 
-# All root-level dot files and directories (local development only)
+# Dot files
 /.*
 !/.gitignore
-!/.github/
-
-# Proprietary server code (competitive advantage)
-relay/
-monitoring/
-tools/
-web-bundles/
-
-# Business and competitive documentation (moved to organized structure)
-docs/business/
-docs/performance/
-docs/research/
-
-# CONFIDENTIAL - Project-private folder (infrastructure, credentials, test results)
-.project-private/
-
-# INTERNAL - Team workspace (planning, reports, meeting notes)
-.internal/
-
-# Strategic planning docs (keep private until public launch)
-docs/1-PRODUCT/OPEN_SOURCE_PLAN.md
-docs/1-PRODUCT/GITHUB_RELEASE_SUMMARY.md
-
-# Beta release builds (not committed to public repo)
-beta-release/bin/
-beta-release/tests/results/
-
-# First release builds (distributed via GitHub Releases)
-first-release/bin/
-
-# Alpha build archive (historical development builds)
-.archive/
-
-# Smart contract build artifacts
-contracts/artifacts/
-contracts/cache/
-contracts/typechain-types/
-contracts/node_modules/
+!/.github
