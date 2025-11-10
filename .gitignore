@@ -13,13 +13,17 @@ daemon
 /cli
 /demo-p2p
 
-# Version-specific binaries (all l2/l3 builds)
+# Version-specific binaries (all l2/l3/v* builds)
 shadowmesh-l2-*
 shadowmesh-l3-*
+shadowmesh-v*
 lightnode-l3-*
+lightnode-v*
 
-# Keys (development and testing)
+# Keys (development and testing - NEVER commit these!)
 keys-mac/
+keys-node-*/
+keys-*/
 
 # Test binaries
 *.test
@@ -86,10 +90,19 @@ docs-backup-*/
 !CHANGELOG.md
 
 # Private documentation (keep local until release)
+docs/1-PRODUCT/
 docs/2-ARCHITECTURE/
 docs/3-IMPLEMENTATION/
 docs/4-OPERATIONS/
 docs/archive/
+docs/architecture/
+docs/benchmarks/
+docs/prd.md
+docs/README.md
+
+# Redundant/archived release directories
+beta-release/
+first-release/
 
 # Development tools and AI assistants
 .bmad*
