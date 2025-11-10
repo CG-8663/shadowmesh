@@ -105,10 +105,9 @@ This document contains:
 **Supporting Documentation**:
 - [STATUS.md](STATUS.md) - Quick 30-second status overview
 - [Kademlia DHT Architecture](docs/2-ARCHITECTURE/KADEMLIA_DHT_ARCHITECTURE.md) - Complete DHT design
-- [DHT Implementation Tickets](docs/3-IMPLEMENTATION/DHT_IMPLEMENTATION_TICKETS.md) - 15 detailed tickets with acceptance criteria
-- [Testing Strategy](docs/3-IMPLEMENTATION/TESTING_STRATEGY_DHT.md) - 200+ unit tests, 50+ integration tests
 - [Bootstrap Node Deployment](docs/4-OPERATIONS/BOOTSTRAP_NODE_DEPLOYMENT.md) - Infrastructure plan
 - [Migration Path](docs/2-ARCHITECTURE/MIGRATION_PATH.md) - 8-week migration timeline
+- Implementation tickets and testing strategy (internal documentation - available at release)
 
 ---
 
