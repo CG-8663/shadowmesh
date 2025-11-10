@@ -16,28 +16,39 @@
 
 ## Project Status
 
-**Current Version**: 0.1.0-alpha
-**Status**: Alpha - Active Development
-**Last Updated**: November 2025
+**Current Version**: v0.1.0-alpha (Released)
+**Next Version**: v0.2.0-alpha (In Development - DHT Migration)
+**Status**: Active Development - Sprint 0 (Week 1 of 4)
+**Last Updated**: November 10, 2025
 
-ShadowMesh is currently in alpha testing. The client implementation is feature-complete for core functionality, but has not undergone independent security audit. We welcome community feedback and contributions.
+📊 **[View Full Project Status & Roadmap](PROJECT_STATUS.md)** | 🚀 **[Quick Status](STATUS.md)**
+
+### Recent Achievements (v0.1.0-alpha)
+- ✅ 28.3 Mbps throughput (45% faster than Tailscale)
+- ✅ Video streaming successful (640x480 @ 547 kb/s)
+- ✅ 3-hour stability test, zero packet loss
+- ✅ Post-quantum cryptography (ML-KEM-1024, ML-DSA-87)
+
+### Current Focus (v0.2.0-alpha)
+- 🔄 Kademlia DHT implementation (4-week sprint)
+- 🔄 Standalone operation (no discovery server dependency)
+- 🔄 3 bootstrap nodes for network entry
 
 **Tested Platforms**:
-- Linux (Debian, Ubuntu)
+- Linux (amd64, arm64)
+- macOS (arm64)
 - Raspberry Pi (ARM64)
-- Cloud VMs (UpCloud, Proxmox)
 
 **Known Limitations**:
-- Alpha development phase - transitioning to Kademlia DHT
-- No formal security audit completed
-- Limited platform testing (Linux, macOS ARM64)
-- Performance optimization ongoing (target: 6-7 Gbps)
+- Alpha development phase
+- No formal security audit
+- DHT implementation in progress (standalone operation coming soon)
 
 ---
 
-ShadowMesh is a fully decentralized, quantum-safe DPN (Decentralized Private Network) implementing NIST-standardized post-quantum cryptography. Unlike proxy-based VPN services with centralized servers, ShadowMesh uses Kademlia DHT for peer discovery, eliminating all central dependencies and proxy infrastructure. The project integrates quantum-resistant algorithms (ML-KEM-1024, ML-DSA-87) with QUIC transport for high-performance, reliable networking.
+ShadowMesh is a fully decentralized, quantum-safe DPN (Decentralized Private Network) implementing NIST-standardized post-quantum cryptography. Unlike proxy-based VPN services with centralized servers, ShadowMesh uses Kademlia DHT for peer discovery, eliminating all central dependencies and proxy infrastructure.
 
-Currently transitioning from alpha builds (v11 UDP+PQC, v19 QUIC) to unified v20+ architecture with standalone Kademlia DHT operation.
+**v0.1.0-alpha** achieved strong performance with UDP transport and post-quantum crypto. **v0.2.0-alpha** (in development) adds Kademlia DHT for standalone, fully decentralized operation.
 
 ## Implementation Features
 

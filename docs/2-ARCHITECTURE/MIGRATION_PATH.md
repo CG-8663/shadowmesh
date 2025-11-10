@@ -1,152 +1,178 @@
 # ShadowMesh Migration Path
 
-**From**: v11 (UDP+PQC) and v19 (QUIC) - Centralized Discovery
-**To**: v20+ (Kademlia DHT + PQC + QUIC) - Standalone Decentralized
+**From**: v0.1.0-alpha (UDP+PQC, Centralized Discovery)
+**To**: v0.2.0-alpha (Kademlia DHT + UDP + PQC, Standalone)
+**Future**: v0.3.0+ (QUIC Migration)
 
-**Timeline**: 18 weeks (Sprint 0-16)
-**Status**: Sprint 0 starting
+**Timeline**: 8 weeks (4 weeks implementation + 4 weeks testing/release)
+**Status**: Sprint 0 starting (Week 1 of 4)
+
+**NOTE**: This migration path has been updated to reflect current project status.
+See `PROJECT_STATUS.md` for the master roadmap.
 
 ---
 
 ## Migration Strategy
 
-### Phase 1: Foundation (Sprint 0-2) - Weeks 1-6
+**Architecture Decision**: Conservative phased approach
+- **v0.2.0-alpha**: Keep UDP transport (proven), add Kademlia DHT (4 weeks)
+- **v0.3.0-alpha**: Migrate to QUIC transport (6 weeks, future)
+- **v1.0.0**: Production features (6-12 months)
 
-**Goal**: Implement Kademlia DHT for decentralized peer discovery
+### Phase 1: Kademlia DHT Implementation (Weeks 1-4)
 
-#### Sprint 0: Architecture POC (Weeks 1-2)
+**Goal**: Replace centralized discovery with Kademlia DHT for standalone operation
 
-**Research & Design**:
-- [ ] Study Kademlia paper and existing implementations (libp2p, BitTorrent)
-- [ ] Design PeerID generation from ML-DSA-87 public keys
-- [ ] Define routing table structure (160 k-buckets, k=20)
-- [ ] Plan bootstrap node strategy
+#### Sprint 0: DHT Foundation (Weeks 1-2)
 
-**POC Deliverables**:
-- [ ] Local 3-node DHT network (localhost testing)
-- [ ] FIND_NODE operation working
-- [ ] Routing table population successful
-- [ ] Peer liveness probing implemented
-
-**Success Criteria**:
-- 3 nodes can discover each other via DHT
-- FIND_NODE lookup completes in <500ms
-- Routing table converges in <60 seconds
-
-#### Sprint 1-2: Kademlia DHT Core (Weeks 3-6)
-
-**DHT Operations**:
-- [ ] FIND_NODE iterative lookup (α=3 parallel requests)
-- [ ] STORE operation with TTL (24-hour default)
-- [ ] FIND_VALUE with caching (10-minute cache)
-- [ ] Routing table maintenance (LRU eviction, hourly liveness check)
-
-**NAT Traversal Planning**:
-- [ ] Research QUIC NAT traversal techniques
-- [ ] Design relay fallback mechanism
-- [ ] Plan UPnP integration (optional)
-
-**Testing**:
-- [ ] 5-10 node test network (multiple machines)
-- [ ] DHT lookup success rate >95%
-- [ ] Peer discovery latency <100ms
-- [ ] Network partition recovery <5 minutes
-
-**Deliverables**:
-- `pkg/discovery/kademlia.go` - Complete DHT implementation
-- `pkg/discovery/routing_table.go` - k-bucket routing table
-- `pkg/discovery/peer_id.go` - PeerID generation and verification
-- Integration tests for all DHT operations
-
----
-
-### Phase 2: Integration (Sprint 3-4) - Weeks 7-10
-
-**Goal**: Merge v11 (PQC) + v19 (QUIC) into unified v20 architecture
-
-#### Sprint 3: QUIC + PQC Handshake (Weeks 7-8)
-
-**PQC over QUIC**:
-- [ ] Port ML-KEM-1024 key exchange to QUIC handshake
-- [ ] Integrate ML-DSA-87 signatures for peer authentication
-- [ ] Generate QUIC TLS certificates signed with ML-DSA-87
-- [ ] Implement certificate pinning for peer verification
-
-**Code Refactoring**:
-- [ ] Extract PQC crypto into `pkg/crypto/pqc/`
-- [ ] Create unified transport interface (`pkg/transport/`)
-- [ ] Migrate TUN device logic to `pkg/layer3/`
-
-**Testing**:
-- [ ] Full PQC handshake over QUIC successful
-- [ ] Benchmark handshake latency (<100ms target)
-- [ ] Test with 2-node direct connection
-
-**Deliverables**:
-- `pkg/crypto/pqc/` - ML-KEM-1024, ML-DSA-87, hybrid mode
-- `pkg/transport/quic.go` - QUIC transport with PQC
-- `cmd/lightnode-l3-v20/` - Unified v20 implementation
-
-#### Sprint 4: DHT + QUIC Integration (Weeks 9-10)
-
-**Peer Discovery Flow**:
-```
-1. Node starts → Generate PeerID from ML-DSA-87 key
-2. Connect to bootstrap nodes (DHT seed nodes)
-3. Query DHT for peers close to own PeerID
-4. Establish QUIC connections to discovered peers
-5. Begin routing traffic through mesh
-```
+**Tickets**: TICKET-001 to TICKET-007
 
 **Implementation**:
-- [ ] Connect DHT operations to QUIC transport
-- [ ] Implement peer exchange via DHT STORE/FIND_VALUE
-- [ ] Peer metadata storage (IP, port, public keys, capabilities)
-- [ ] Automatic peer connection based on routing table
+- [ ] TICKET-001: PeerID generation from ML-DSA-87 public keys
+- [ ] TICKET-002: XOR distance calculations
+- [ ] TICKET-003: PeerInfo data structures
+- [ ] TICKET-004: k-bucket LRU eviction logic
+- [ ] TICKET-005: 256-bucket routing table
+- [ ] TICKET-006: UDP packet protocol (PING, PONG, FIND_NODE, STORE)
+- [ ] TICKET-007: PING/PONG handlers for peer liveness
+
+**Success Criteria**:
+- PeerID generation: <1ms per operation
+- XOR distance: Correct for 1000+ test cases
+- k-bucket eviction: LRU working correctly
+- Routing table: 256 buckets initialized
+- PING/PONG: Round-trip <10ms on localhost
+
+#### Sprint 1: DHT Operations (Weeks 3-4)
+
+**Tickets**: TICKET-008 to TICKET-015
+
+**Implementation**:
+- [ ] TICKET-008: FIND_NODE iterative lookup (α=3 parallel requests)
+- [ ] TICKET-009: Bootstrap node integration (3-5 seed nodes)
+- [ ] TICKET-010: Integration with ML-DSA-87 keypairs
+- [ ] TICKET-011: STORE/FIND_VALUE operations
+- [ ] TICKET-012: NAT detection and peer reachability
+- [ ] TICKET-013: Routing table persistence (save/load from disk)
+- [ ] TICKET-014: Health monitoring and Prometheus metrics
+- [ ] TICKET-015: Integration tests (3-node, 10-node networks)
 
 **Testing**:
-- [ ] End-to-end test: Node starts, discovers peers via DHT, connects via QUIC
-- [ ] 5-node mesh network with zero configuration
-- [ ] Peer discovery completes in <30 seconds
-- [ ] Traffic routing successful through multiple hops
+- [ ] 3-node local network converges in <60 seconds
+- [ ] 10-node distributed network, DHT lookup success rate >95%
+- [ ] FIND_NODE latency <500ms
+- [ ] Bootstrap node connection <5 seconds
 
 **Deliverables**:
-- Fully integrated v20 client (DHT + PQC + QUIC + TUN)
-- Zero-config operation demonstrated
-- Performance baseline established
+- `pkg/discovery/` - Complete DHT implementation
+- `pkg/discovery/dht.go` - Kademlia DHT core
+- `pkg/discovery/routing_table.go` - k-bucket routing table
+- `pkg/discovery/peer_id.go` - PeerID generation and verification
+- `pkg/discovery/bootstrap.go` - Bootstrap node client
+- 50+ integration tests passing
 
 ---
 
-### Phase 3: Optimization (Sprint 5-8) - Weeks 11-14
+### Phase 2: Testing & Validation (Weeks 5-6)
 
-**Goal**: Achieve performance targets (6-7 Gbps, <2ms latency)
+**Goal**: Validate DHT implementation and prepare for standalone release
 
-#### Sprint 5-6: Performance Optimization (Weeks 11-12)
+**Testing Activities**:
 
-**Throughput Improvements**:
-- [ ] Zero-copy packet handling (reduce memcpy overhead)
-- [ ] SIMD acceleration for ChaCha20-Poly1305 (AVX2, NEON)
-- [ ] Parallel QUIC streams (utilize multiple CPU cores)
-- [ ] Buffer pool optimization (per-stream allocation)
+**Unit Tests** (200+ tests):
+- [ ] PeerID generation and validation
+- [ ] XOR distance calculations
+- [ ] k-bucket LRU eviction
+- [ ] Routing table operations
+- [ ] DHT message encoding/decoding
+- [ ] FIND_NODE iterative lookup
 
-**Latency Improvements**:
-- [ ] Async I/O for TUN device (io_uring on Linux)
-- [ ] DHT route caching (avoid repeated lookups)
-- [ ] Pre-establish QUIC connections (connection pool)
-- [ ] Reduce lock contention (lock-free data structures)
+**Integration Tests** (50+ tests):
+- [ ] 3-node local network (all nodes discover each other)
+- [ ] 10-node distributed network (cross-region)
+- [ ] NAT traversal scenarios
+- [ ] Bootstrap node failover
+- [ ] Network partition recovery
+- [ ] Peer churn handling (nodes joining/leaving)
 
-**Benchmarking**:
-- [ ] iperf3 throughput tests (target: 1+ Gbps first, then 6-7 Gbps)
-- [ ] ping latency tests (target: <5ms first, then <2ms)
-- [ ] Packet loss monitoring (<1% target)
+**Performance Tests**:
+- [ ] Throughput: ≥25 Mbps (maintain v0.1.0-alpha baseline)
+- [ ] Latency: <50ms overhead
+- [ ] Packet loss: <5%
+- [ ] DHT lookup latency: <500ms
+- [ ] Peer discovery: <60 seconds to convergence
 
-#### Sprint 7-8: Scalability & Reliability (Weeks 13-14)
+**E2E Standalone Operation**:
+- [ ] Fresh install, no configuration, successful peer discovery
+- [ ] Ping test between discovered peers
+- [ ] Video streaming test (640x480 @ 547 kb/s)
+- [ ] 3-hour stability test (zero packet loss)
 
-**Multi-Peer Testing**:
-- [ ] 10-node mesh network (concurrent connections)
-- [ ] 100-node simulation (stress testing)
-- [ ] Network partition recovery (split-brain scenarios)
-- [ ] Peer churn handling (nodes joining/leaving frequently)
+---
+
+### Phase 3: Documentation & Release (Weeks 7-8)
+
+**Goal**: Prepare v0.2.0-alpha for public release
+
+**Documentation**:
+
+- [ ] README.md with quick start guide
+- [ ] INSTALLATION.md for Linux (amd64, arm64) and macOS (arm64)
+- [ ] ARCHITECTURE.md with DHT design overview
+- [ ] TROUBLESHOOTING.md with common issues
+- [ ] Performance benchmarks vs v0.1.0-alpha
+- [ ] Migration guide from v0.1.0-alpha
+
+**Release Preparation**:
+- [ ] Build release binaries (Linux amd64/arm64, macOS arm64)
+- [ ] Deploy 3 bootstrap nodes (US, EU, Asia)
+- [ ] Set up CI/CD pipeline (GitHub Actions)
+- [ ] Create release notes
+- [ ] Tag v0.2.0-alpha in Git
+
+**Bootstrap Infrastructure**:
+- [ ] Provision 3 VPS instances (Linode/DigitalOcean)
+- [ ] Deploy bootstrap node software
+- [ ] Configure monitoring (Prometheus + Grafana)
+- [ ] Set up health checks (UptimeRobot)
+- [ ] Document runbooks for operations
+
+---
+
+## Future Phases (Post v0.2.0-alpha)
+
+### v0.3.0-alpha: QUIC Migration (6 Weeks)
+
+**Goal**: Replace UDP with QUIC for better NAT traversal and reliability
+
+**Key Features**:
+- QUIC transport with quic-go library
+- 0-RTT reconnection
+- Built-in congestion control
+- Connection migration
+- Improved NAT traversal
+
+**Deliverables**:
+- `pkg/transport/quic.go` - QUIC transport layer
+- ML-KEM-1024 over QUIC handshake
+- Performance benchmarks (target: ≥100 Mbps)
+
+### v1.0.0: Production Release (6-12 Months)
+
+**Goal**: Enterprise-ready quantum-safe DPN
+
+**Key Features**:
+- Multi-hop routing (3-5 hops)
+- Traffic obfuscation (WebSocket mimicry)
+- Atomic clock synchronization
+- TPM/SGX attestation
+- Mobile apps (iOS, Android)
+- SOC 2 certification
+
+**Performance Targets**:
+- 6-7 Gbps throughput
+- <2ms latency overhead
+- 99.9% uptime
 
 **Reliability**:
 - [ ] QUIC connection migration (handle IP changes)
