@@ -95,6 +95,17 @@ first-release/
 # Blockchain contracts
 contracts/
 
+# Scripts and systemd (security audit required before publishing)
+scripts/
+systemd/
+
+# Source code (security audit required before publishing)
+client/
+cmd/
+pkg/
+shared/
+test/
+
 # Development tools
 .bmad*
 .claude/
