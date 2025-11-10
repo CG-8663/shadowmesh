@@ -92,6 +92,9 @@ docs/README.md
 beta-release/
 first-release/
 
+# Blockchain contracts
+contracts/
+
 # Development tools
 .bmad*
 .claude/
