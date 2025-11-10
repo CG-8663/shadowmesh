@@ -89,9 +89,7 @@ TICKET-001 → TICKET-005 → TICKET-007 → TICKET-008 → TICKET-011
 ```
 
 **Documentation**:
-- `docs/2-ARCHITECTURE/KADEMLIA_DHT_ARCHITECTURE.md` - Complete DHT design
-- `docs/4-OPERATIONS/BOOTSTRAP_NODE_DEPLOYMENT.md` - Infrastructure plan
-- Implementation tickets and testing strategy (internal documentation)
+- Architecture, implementation, operations, and testing documentation (internal - available at release)
 
 ---
 

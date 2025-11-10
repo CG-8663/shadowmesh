@@ -104,10 +104,7 @@ This document contains:
 
 **Supporting Documentation**:
 - [STATUS.md](STATUS.md) - Quick 30-second status overview
-- [Kademlia DHT Architecture](docs/2-ARCHITECTURE/KADEMLIA_DHT_ARCHITECTURE.md) - Complete DHT design
-- [Bootstrap Node Deployment](docs/4-OPERATIONS/BOOTSTRAP_NODE_DEPLOYMENT.md) - Infrastructure plan
-- [Migration Path](docs/2-ARCHITECTURE/MIGRATION_PATH.md) - 8-week migration timeline
-- Implementation tickets and testing strategy (internal documentation - available at release)
+- Architecture, implementation, operations, and testing documentation (internal - available at v0.2.0-alpha release)
 
 ---
 
@@ -248,7 +245,7 @@ ShadowMesh is transitioning to a fully decentralized architecture with standalon
 
 **Full Roadmap**: See **[PROJECT_STATUS.md](PROJECT_STATUS.md)** for 8-week v0.2.0-alpha timeline and long-term vision.
 
-**Historical Achievements**: See [docs/benchmarks/](docs/benchmarks/) for v0.1.0-alpha performance results and [docs/archive/](docs/archive/) for development history.
+**Historical Achievements**: See [docs/benchmarks/](docs/benchmarks/) for v0.1.0-alpha performance results. Development history (internal documentation).
 
 ## 🧪 Testing
 

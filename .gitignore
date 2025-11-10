@@ -73,7 +73,10 @@ docs-backup-*/
 !CHANGELOG.md
 
 # Private documentation (keep local until release)
+docs/2-ARCHITECTURE/
 docs/3-IMPLEMENTATION/
+docs/4-OPERATIONS/
+docs/archive/
 
 # Development tools and AI assistants
 .bmad*
