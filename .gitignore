@@ -49,7 +49,9 @@ vendor/
 .DS_Store
 Thumbs.db
 
-# Configuration
+# Configuration (keep all configs private for local development)
+/config/
+/configs/
 config.yaml
 *.local.yaml
 
