@@ -56,35 +56,63 @@ ShadowMesh is a fully decentralized, quantum-safe DPN (Decentralized Private Net
 
 ## Implementation Features
 
+**Current (v0.1.0-alpha)**:
 - **Post-Quantum Cryptography**: ML-KEM-1024 (NIST FIPS 203), ML-DSA-87 (NIST FIPS 204)
-- **Kademlia DHT**: Decentralized peer discovery (zero central servers)
-- **QUIC Transport**: Reliable, low-latency stream protocol
-- **Hybrid Mode**: Classical (X25519, Ed25519) + PQC for defense in depth
+- **UDP Transport**: Proven 28.3 Mbps throughput with low latency
 - **Layer 3 Networking**: TUN device for IP-level routing
 - **Symmetric Encryption**: ChaCha20-Poly1305 (IETF RFC 8439)
+- **Hybrid Mode**: Classical (X25519, Ed25519) + PQC for defense in depth
+- **Forward Secrecy**: Ephemeral session keys with automatic rotation
+
+**In Development (v0.2.0-alpha)**:
+- **Kademlia DHT**: Decentralized peer discovery (zero central servers)
 - **PeerID Generation**: Derived from ML-DSA-87 public keys (SHA256)
-- **Forward Secrecy**: Ephemeral session keys
-- **Standalone Operation**: No infrastructure dependencies
+- **Standalone Operation**: No infrastructure dependencies, 3 bootstrap nodes only
+
+**Planned (v0.3.0-alpha+)**:
+- **QUIC Transport**: Reliable, low-latency stream protocol with better NAT traversal
+- **Multi-hop Routing**: 3-5 configurable hops for enhanced privacy
+- **Traffic Obfuscation**: WebSocket mimicry and cover traffic
 
 ## 🚀 Current Development Focus
 
-**Active Development**: Kademlia DHT + PQC + QUIC Integration
+**Active Development (v0.2.0-alpha)**: Kademlia DHT Implementation for Standalone Operation
 
-ShadowMesh is transitioning from centralized discovery to a fully decentralized peer-to-peer architecture:
+ShadowMesh is transitioning from centralized discovery to fully decentralized peer-to-peer architecture:
 
-- **Standalone DHT**: Kademlia implementation for peer discovery (zero central dependencies)
-- **QUIC Transport**: Stream-based protocol replacing WebSocket
-- **PQC Integration**: Merging ML-KEM-1024 + ML-DSA-87 with QUIC transport
-- **Layer 3 Networking**: TUN device for IP-level routing
+**Current Sprint (Sprint 0, Week 1 of 4)**:
+- **Kademlia DHT**: Decentralized peer discovery (replacing centralized discovery server)
+- **PeerID Generation**: Derived from ML-DSA-87 public keys for cryptographic verification
+- **Bootstrap Nodes**: 3-5 seed nodes for network entry (US, EU, Asia)
+- **UDP Transport**: Keeping proven v0.1.0-alpha transport (28.3 Mbps baseline)
 
-**No Public Releases Yet**: Pre-built binaries will be available when v1.0.0 is published to GitHub Releases.
+**Future Work**:
+- **v0.3.0-alpha** (6 weeks): QUIC transport migration for better NAT traversal
+- **v1.0.0** (6-12 months): Production features (multi-hop routing, traffic obfuscation, TPM attestation)
 
-For development roadmap and architecture details, see:
-- **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - Master roadmap (single source of truth)
-- [Kademlia DHT Architecture](docs/2-ARCHITECTURE/KADEMLIA_DHT_ARCHITECTURE.md)
-- [DHT Implementation Tickets](docs/3-IMPLEMENTATION/DHT_IMPLEMENTATION_TICKETS.md)
-- [Migration Path](docs/2-ARCHITECTURE/MIGRATION_PATH.md)
-- [Development Guidelines](docs/3-IMPLEMENTATION/DEVELOPMENT_GUIDELINES.md)
+---
+
+### 📋 Full Roadmap & Documentation
+
+**👉 [PROJECT_STATUS.md](PROJECT_STATUS.md) - MASTER ROADMAP (Single Source of Truth)**
+
+This document contains:
+- 8-week v0.2.0-alpha timeline with 15 implementation tickets
+- Current sprint progress and weekly updates
+- Performance targets and success criteria
+- Long-term vision (v0.3.0-alpha, v1.0.0)
+
+**Supporting Documentation**:
+- [STATUS.md](STATUS.md) - Quick 30-second status overview
+- [Kademlia DHT Architecture](docs/2-ARCHITECTURE/KADEMLIA_DHT_ARCHITECTURE.md) - Complete DHT design
+- [DHT Implementation Tickets](docs/3-IMPLEMENTATION/DHT_IMPLEMENTATION_TICKETS.md) - 15 detailed tickets with acceptance criteria
+- [Testing Strategy](docs/3-IMPLEMENTATION/TESTING_STRATEGY_DHT.md) - 200+ unit tests, 50+ integration tests
+- [Bootstrap Node Deployment](docs/4-OPERATIONS/BOOTSTRAP_NODE_DEPLOYMENT.md) - Infrastructure plan
+- [Migration Path](docs/2-ARCHITECTURE/MIGRATION_PATH.md) - 8-week migration timeline
+
+---
+
+**No Public Releases Yet**: Pre-built binaries will be available when v0.2.0-alpha is released (target: December 8, 2025).
 
 ## 🏗️ Architecture
 
@@ -219,9 +247,9 @@ ShadowMesh is transitioning to a fully decentralized architecture with standalon
 - [ ] Security audit preparation
 - [ ] Beta release (v1.0.0-beta.1)
 
-**Full Roadmap**: See [docs/1-PRODUCT/ROADMAP.md](docs/1-PRODUCT/ROADMAP.md) for 18-week detailed plan.
+**Full Roadmap**: See **[PROJECT_STATUS.md](PROJECT_STATUS.md)** for 8-week v0.2.0-alpha timeline and long-term vision.
 
-**Historical Achievements**: See [docs/archive/](docs/archive/) for completed Epic 1, Epic 2, and v11 reports.
+**Historical Achievements**: See [docs/benchmarks/](docs/benchmarks/) for v0.1.0-alpha performance results and [docs/archive/](docs/archive/) for development history.
 
 ## 🧪 Testing
 
