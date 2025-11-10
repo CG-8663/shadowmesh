@@ -72,6 +72,9 @@ docs-backup-*/
 !SECURITY.md
 !CHANGELOG.md
 
+# Private documentation (keep local until release)
+docs/3-IMPLEMENTATION/
+
 # Development tools and AI assistants
 .bmad*
 .claude/
