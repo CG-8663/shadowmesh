@@ -1,40 +1,17 @@
-# Binaries
+# Build artifacts
 bin/
+dist/
+build/
 *.exe
 *.dll
 *.so
 *.dylib
-/client/daemon/shadowmesh-client
-/relay/server/shadowmesh-relay
-/tmp/shadowmesh-client
-daemon
-/cli
-/demo-p2p
-shadowmesh-l2-*
-shadowmesh-l3-*
-shadowmesh-v*
-lightnode-l3-*
-lightnode-v*
 
-# Keys
-keys-mac/
-keys-node-*/
-keys-*/
-*.key
-*.pem
-*.p12
-keys/
-.shadowmesh/keys/
-
-# Test binaries
+# Development
 *.test
 *.out
-
-# Go
-go.work
-/go.mod
-/go.sum
-/Makefile
+*.log
+*.bak
 vendor/
 
 # IDE
@@ -48,28 +25,32 @@ vendor/
 .DS_Store
 Thumbs.db
 
-# Configuration
-/config/
-/configs/
-config.yaml
-*.local.yaml
+# Config and secrets
+*.key
+*.pem
+*.p12
+config/
+configs/
+keys/
+keys-*/
 
-# Logs
-*.log
-logs/
-
-# Build artifacts
-dist/
-build/
-
-# Temporary files
+# Temporary
 tmp/
 temp/
-docs-backup-*/
-*.bak
 
-# Root-level markdown files
-/*.md
+# Documentation
+docs/
+
+# Releases
+*-release/
+
+# Development tools
+.bmad*
+.claude/
+.gemini/
+
+# Project files
+*.md
 !README.md
 !LICENSE
 !CONTRIBUTING.md
@@ -77,39 +58,14 @@ docs-backup-*/
 !SECURITY.md
 !CHANGELOG.md
 
-# Documentation
-docs/1-PRODUCT/
-docs/2-ARCHITECTURE/
-docs/3-IMPLEMENTATION/
-docs/4-OPERATIONS/
-docs/archive/
-docs/architecture/
-docs/benchmarks/
-docs/prd.md
-docs/README.md
-
-# Releases
-beta-release/
-first-release/
-
-# Blockchain contracts
-contracts/
-
-# Scripts and systemd (security audit required before publishing)
-scripts/
-systemd/
-
-# Source code (security audit required before publishing)
+# Source code
 client/
 cmd/
 pkg/
 shared/
 test/
-
-# Development tools
-.bmad*
-.claude/
-.gemini/
+scripts/
+contracts/
 
 # Dot files
 /.*
