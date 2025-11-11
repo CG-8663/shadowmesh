@@ -1,0 +1,10 @@
+# Code Owners for ShadowMesh Repository
+
+# Security-critical files require review from repository owner
+/.github/workflows/* @CG-8663
+/.github/dependabot.yml @CG-8663
+/SECURITY.md @CG-8663
+/.gitignore @CG-8663
+
+# All files default to repository owner
+* @CG-8663
