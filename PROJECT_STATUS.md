@@ -1,118 +1,283 @@
 # ShadowMesh Project Status & Roadmap
 
-**Last Updated**: November 10, 2025
+**Last Updated**: November 12, 2025
 **Current Version**: v0.1.0-alpha (Released)
-**Next Version**: v0.2.0-alpha (In Development)
-**Project Phase**: DHT Implementation for Standalone Operation
+**Next Version**: MVP v0.2.0-alpha (In Development)
+**Project Phase**: MVP Development - Epic 1 (Foundation & Cryptography)
 
 ---
 
 ## Executive Summary
 
-ShadowMesh is a post-quantum decentralized private network (DPN) that surpasses WireGuard, Tailscale, and ZeroTier. After successfully releasing v0.1.0-alpha with excellent performance (28.3 Mbps, 45% faster than Tailscale), we are now transitioning to **v0.2.0-alpha** with Kademlia DHT for fully decentralized, standalone operation.
+ShadowMesh is a post-quantum decentralized private network (DPN) that surpasses WireGuard, Tailscale, and ZeroTier. After successfully releasing v0.1.0-alpha with excellent performance (28.3 Mbps, 45% faster than Tailscale), we are now developing the **full MVP** with:
 
-**Critical Milestone**: Removing centralized discovery dependency to enable standalone install and testing.
+- **Hybrid Peer Discovery**: Kademlia DHT + Ethereum smart contract (chronara.eth)
+- **WebSocket Secure (WSS)**: Traffic obfuscation for censorship resistance
+- **TAP Devices**: Layer 2 networking with Ethernet frame encryption
+- **Smart Contract**: Solidity relay node registry with staking and slashing
+- **Monitoring Stack**: Grafana + Prometheus with 3 pre-configured dashboards
+- **PostgreSQL Database**: User/device management with audit logs
+- **Public Network Map**: React + Leaflet.js visualization
 
----
-
-## Current Status (November 10, 2025)
-
-### ✅ v0.1.0-alpha Released
-
-**Achievement**: Functional post-quantum VPN with strong performance
-
-**Key Metrics**:
-- **Throughput**: 28.3 Mbps sender, 27.0 Mbps receiver
-- **Comparison**: 45% faster than Tailscale (35.5 vs 24.5 Mbps)
-- **Video Streaming**: 640x480 @ 547 kb/s successful
-- **Test Duration**: 3-hour stability test, zero packet loss
-- **Architecture**: UDP transport + ML-KEM-1024 + ML-DSA-87
-
-**Blocker Identified**: Centralized discovery server at 209.151.148.121:8080 (now shut down)
-- Nodes cannot discover peers without central infrastructure
-- Blocks standalone deployment and testing
-- Creates single point of failure
-
-**Documentation**:
-- `docs/benchmarks/v0.1.0-alpha-performance.md`
-- `docs/benchmarks/v0.1.0-alpha-video-streaming.md`
-- `docs/2-ARCHITECTURE/CURRENT_STATE.md`
+**Critical Milestone**: Complete BMAD methodology planning phase, enter implementation phase with 6 epics and 46 stories.
 
 ---
 
-## Active Development: v0.2.0-alpha DHT Migration
+## Current Status (November 12, 2025)
 
-### 🔄 Phase 1: Kademlia DHT Implementation (4 Weeks)
+### ✅ Planning & Solutioning Complete
 
-**Objective**: Replace centralized discovery with Kademlia DHT for peer-to-peer discovery
+**BMAD Workflow Status**:
+- ✅ **PRD Created** (October 31, 2025) - 44 functional requirements, 31 non-functional requirements
+- ✅ **Architecture Created** (November 11, 2025) - 4,053 lines covering all PRD requirements
+- ✅ **Solutioning Gate Check Passed** (November 11, 2025) - All 6 critical PRD-Architecture conflicts resolved
+- ✅ **Sprint Planning Complete** (November 12, 2025) - 6 epics, 46 stories tracked in sprint-status.yaml
 
-**Timeline**: November 10 - December 8, 2025 (4 weeks)
+**Documentation Status**:
+- PRD: `docs/prd.md` (complete with 6 epics, 46 stories)
+- Architecture: `docs/2-ARCHITECTURE/KADEMLIA_DHT_ARCHITECTURE.md` (4,053 lines, complete)
+- Sprint Status: `.bmad-ephemeral/sprint-status.yaml` (tracking all work items)
+- Workflow Status: `docs/bmm-workflow-status.yaml` (Phase 2 complete, Phase 3 starting)
 
-**Architecture Decision**: Conservative migration path
-- Keep UDP transport from v11 (proven performance)
-- Add Kademlia DHT for decentralized discovery
-- Deploy 3-5 bootstrap nodes for network entry
-- Defer QUIC migration to v0.3.0+ (reduce complexity)
+### 🔄 Active Development: MVP Implementation
 
-**Implementation Plan**:
+**Current Sprint**: Epic 1 - Foundation & Cryptography (Weeks 1-2)
+**Sprint Start**: November 12, 2025
+**Sprint Goal**: Establish monorepo, implement hybrid PQC primitives, validate cryptographic performance
 
-| Sprint | Duration | Focus | Tickets |
-|--------|----------|-------|---------|
-| **Sprint 0** | Weeks 1-2 | DHT Foundation | TICKET-001 to TICKET-007 |
-| **Sprint 1** | Weeks 3-4 | DHT Operations | TICKET-008 to TICKET-015 |
-
-**Sprint 0 (Weeks 1-2): Foundation**
-- TICKET-001: PeerID generation from ML-DSA-87 public keys
-- TICKET-002: XOR distance calculations
-- TICKET-003: PeerInfo data structures
-- TICKET-004: k-bucket implementation (LRU eviction)
-- TICKET-005: 256-bucket routing table
-- TICKET-006: UDP packet protocol (PING, PONG, FIND_NODE, STORE)
-- TICKET-007: PING/PONG handlers for peer liveness
-
-**Sprint 1 (Weeks 3-4): Operations**
-- TICKET-008: FIND_NODE iterative lookup (α=3 parallelism)
-- TICKET-009: Bootstrap node integration (3-5 seed nodes)
-- TICKET-010: Integration with ML-DSA-87 keypairs
-- TICKET-011: STORE/FIND_VALUE operations
-- TICKET-012: NAT detection and peer reachability
-- TICKET-013: Routing table persistence
-- TICKET-014: Health monitoring and Prometheus metrics
-- TICKET-015: Integration tests (3-node, 10-node networks)
-
-**Estimated Effort**: 36 developer-days (~4 weeks with parallelization)
-
-**Critical Path**:
-```
-TICKET-001 → TICKET-005 → TICKET-007 → TICKET-008 → TICKET-011
-(PeerID)     (Routing)    (Handlers)   (Lookup)     (Store/Find)
-```
-
-**Documentation**:
-- Architecture, implementation, operations, and testing documentation (internal - available at release)
+**Today's Activities** (November 12, 2025):
+1. 🔄 **Creating Epic 1 Tech Context** - Generate technical specification from PRD and Architecture
+2. 📋 **Drafting Story 1.1** - Monorepo Setup story from epic context
+3. 📋 **Beginning Story 1.1 Development** - Implement monorepo structure and configuration
 
 ---
 
-### 🎯 Success Criteria for v0.2.0-alpha
+## MVP Architecture Overview
 
-**Functional Requirements**:
-- [ ] Standalone operation (no discovery server dependency)
-- [ ] 3-node local test network converges in <60 seconds
-- [ ] FIND_NODE lookup completes in <500ms
-- [ ] 95%+ peer discovery success rate
-- [ ] Integration with existing v11 UDP transport
+### Technology Stack
 
-**Performance Requirements** (maintain v0.1.0-alpha baseline):
-- [ ] ≥25 Mbps throughput (maintain 28.3 Mbps from v11)
-- [ ] <50ms latency overhead
-- [ ] <5% packet loss
-- [ ] 3-hour stability test passes
+| Component | Technology | Version | Purpose |
+|-----------|------------|---------|---------|
+| **Language** | Go | 1.25.4 | Primary language |
+| **PQC** | cloudflare/circl | v1.6.1 | ML-KEM-1024 + ML-DSA-87 |
+| **Transport** | gorilla/websocket | v1.5.3 | WebSocket Secure (WSS) |
+| **Smart Contract** | Solidity | 0.8.20+ | chronara.eth relay registry |
+| **Database** | PostgreSQL | 14+ | User/device/audit data |
+| **Monitoring** | Prometheus + Grafana | 2.45+ / 10+ | Metrics and visualization |
+| **Frontend** | React + TypeScript | Latest | Public network map |
 
-**Quality Requirements**:
+### Core Components
+
+1. **Hybrid Peer Discovery**
+   - Kademlia DHT for P2P peer discovery (O(log N) lookups)
+   - Ethereum smart contract for relay node registry
+   - Bootstrap nodes for DHT network entry
+   - ENS resolution via chronara.eth
+
+2. **Transport Layer**
+   - WebSocket Secure (WSS) with TLS 1.3 for censorship resistance
+   - Traffic obfuscation (packet size/timing randomization)
+   - UDP fallback for direct P2P connections
+
+3. **Network Layer**
+   - TAP devices (Layer 2) for Ethernet frame encryption
+   - IP headers hidden to prevent traffic analysis
+   - gVisor userspace TCP/IP stack at exit nodes
+
+4. **Security**
+   - Post-Quantum Cryptography (ML-KEM-1024 + ML-DSA-87)
+   - Hybrid mode with classical crypto (X25519 + Ed25519)
+   - 5-minute key rotation (default, configurable)
+
+5. **Smart Contract Integration**
+   - Solidity contract with staking (0.1 ETH), heartbeats, slashing
+   - ENS resolution (chronara.eth)
+   - Caching strategy (10-minute TTL)
+
+6. **Monitoring Stack**
+   - Grafana + Prometheus via Docker Compose
+   - 15+ metrics exposed (connection status, throughput, latency, crypto operations)
+   - 3 pre-configured dashboards (main user, relay operator, developer/debug)
+
+7. **Database**
+   - PostgreSQL 14+ with complete schema
+   - 7 tables: users, devices, peer_relationships, connection_history, access_logs, device_groups, device_group_members
+   - Audit logging for compliance (SOC 2/HIPAA/PCI DSS ready)
+
+8. **Public Network Map**
+   - React + Leaflet.js frontend
+   - Blockchain event indexer
+   - Privacy-preserving (city/country only, no precise coordinates)
+
+---
+
+## MVP Development Timeline (12 Weeks)
+
+### Epic 1: Foundation & Cryptography (Weeks 1-2) - 🔄 IN PROGRESS
+
+**Epic Goal**: Establish monorepo, implement hybrid PQC primitives, validate cryptographic performance targets
+
+**Stories** (7 total):
+- 1.1: Monorepo Setup - 🔄 **STARTING TODAY**
+- 1.2: Hybrid Key Exchange Implementation (ML-KEM-1024 + X25519)
+- 1.3: Hybrid Digital Signatures (ML-DSA-87 + Ed25519)
+- 1.4: Symmetric Encryption Pipeline (ChaCha20-Poly1305)
+- 1.5: Key Rotation Mechanism (5-minute default)
+- 1.6: Encrypted Keystore (AES-256-GCM with PBKDF2)
+- 1.7: Performance Benchmarking Suite
+
+**Estimate**: 16 days (2 weeks with buffer)
+
+### Epic 2: Core Networking & Direct P2P (Weeks 3-4) - 📋 PLANNED
+
+**Epic Goal**: Implement Layer 2 networking with TAP devices, WebSocket transport, direct P2P connections
+
+**Stories** (8 total):
+- 2.1: TAP Device Management
+- 2.2: Ethernet Frame Capture
+- 2.3: WebSocket Secure (WSS) Transport
+- 2.4: NAT Type Detection
+- 2.5: UDP Hole Punching
+- 2.6: Frame Encryption Pipeline
+- 2.7: CLI Commands (Connect, Disconnect, Status)
+- 2.8: Direct P2P Integration Test
+
+**Estimate**: 24 days (~3-4 weeks with parallel work)
+
+### Epic 3: Smart Contract & Blockchain Integration (Weeks 5-6) - 📋 PLANNED
+
+**Epic Goal**: Deploy chronara.eth smart contract, enable relay node registration/discovery
+
+**Stories** (8 total):
+- 3.1: RelayNodeRegistry Smart Contract
+- 3.2: ENS Integration (chronara.eth)
+- 3.3: Hardhat Deployment Scripts
+- 3.4: Go Blockchain Client (Query Registry)
+- 3.5: Node Signature Verification
+- 3.6: Gas Optimization & Cost Analysis
+- 3.7: Smart Contract Security Testing
+- 3.8: Testnet Deployment & Validation
+
+**Estimate**: 23 days (~3-4 weeks with parallel work)
+
+### Epic 4: Relay Infrastructure & CGNAT Traversal (Weeks 7-9) - 📋 PLANNED
+
+**Epic Goal**: Implement relay node software, fallback routing, achieve 95%+ connectivity across CGNAT
+
+**Stories** (7 total):
+- 4.1: Relay Node Binary (Core Routing)
+- 4.2: Capacity Management
+- 4.3: Client Relay Fallback Logic
+- 4.4: Multi-Hop Routing Protocol
+- 4.5: Relay Node Installation & Deployment
+- 4.6: CGNAT Test Matrix
+- 4.7: Relay Node Operator Dashboard
+
+**Estimate**: 31 days (~4-5 weeks with parallel work)
+
+### Epic 5: Monitoring & Grafana Dashboard (Weeks 10-11) - 📋 PLANNED
+
+**Epic Goal**: Implement Prometheus metrics, Grafana dashboards, Docker Compose monitoring stack
+
+**Stories** (8 total):
+- 5.1: Prometheus Metrics Endpoint
+- 5.2: Comprehensive Metric Taxonomy
+- 5.3: Docker Compose Monitoring Stack
+- 5.4: Main User Dashboard (4-Row Layout)
+- 5.5: Relay Operator Dashboard
+- 5.6: Developer/Debug Dashboard
+- 5.7: Resource Optimization
+- 5.8: Installation Script Integration
+
+**Estimate**: 25 days (~3-4 weeks with parallel work)
+
+### Epic 6: Public Map, Documentation & Launch (Week 12) - 📋 PLANNED
+
+**Epic Goal**: Build public network map, finalize documentation, execute beta launch
+
+**Stories** (8 total):
+- 6.1: Public Network Map Website
+- 6.2: Real-Time Map Updates (Blockchain Events)
+- 6.3: User Documentation (Installation & Troubleshooting)
+- 6.4: Relay Node Operator Guide
+- 6.5: GitHub Repository Cleanup & Branding
+- 6.6: Beta Launch Strategy
+- 6.7: Monitoring & Analytics Setup
+- 6.8: Beta Launch Execution & Monitoring
+
+**Estimate**: 25 days (~3-4 weeks; timeline shows 1 week with prep in earlier epics)
+
+---
+
+## Success Criteria for MVP
+
+### Functional Requirements (44 total)
+- [ ] Hybrid PQC key exchange (ML-KEM-1024 + X25519) and signatures (ML-DSA-87 + Ed25519)
+- [ ] TAP device Layer 2 networking with Ethernet frame encryption
+- [ ] WebSocket Secure (WSS) transport with traffic obfuscation
+- [ ] Kademlia DHT for P2P peer discovery
+- [ ] Ethereum smart contract relay registry (chronara.eth)
+- [ ] Multi-hop relay routing (3-5 hops from different operators)
+- [ ] Grafana + Prometheus monitoring stack with 3 dashboards
+- [ ] PostgreSQL database with 7 tables
+- [ ] Public network map (React + Leaflet.js)
+- [ ] 95%+ CGNAT traversal success rate
+
+### Non-Functional Requirements (31 total)
+
+**Performance**:
+- [ ] 1+ Gbps single-connection throughput (target: 6-7 Gbps)
+- [ ] <2ms latency overhead (added by ShadowMesh)
+- [ ] <5% packet loss under normal operation
+- [ ] 3-hour stability test with zero crashes
+
+**Security**:
+- [ ] ML-KEM-1024 key exchange (<100ms)
+- [ ] ML-DSA-87 signatures (<15ms signing + verification)
+- [ ] Key rotation every 5 minutes (default, configurable)
+- [ ] All keys securely zeroed from memory after use
+
+**Reliability**:
+- [ ] 99.9% uptime target
+- [ ] Automatic relay fallback on P2P failure
+- [ ] Graceful degradation under network issues
+
+**Quality**:
 - [ ] 85%+ unit test coverage
 - [ ] 50+ integration tests passing
-- [ ] Automated CI/CD pipeline
 - [ ] Zero critical security vulnerabilities
+- [ ] Comprehensive documentation (10+ markdown files)
+
+### Beta Launch Targets
+- [ ] 100-500 beta users acquired
+- [ ] 80%+ connection success rate
+- [ ] <5% churn in first week
+- [ ] Public network map deployed with 5+ relay nodes
+- [ ] Discord community established (#general, #support, #development)
+
+---
+
+## Key Metrics
+
+### Development Velocity
+- **Total Epics**: 6
+- **Total Stories**: 46
+- **Epics Contexted**: 0 (starting Epic 1 today)
+- **Stories Drafted**: 0 (starting Story 1.1 today)
+- **Stories In Progress**: 0 (starting Story 1.1 today)
+- **Stories Completed**: 0
+
+### Performance Baselines (from v0.1.0-alpha)
+- **Throughput**: 28.3 Mbps (target: maintain ≥25 Mbps, goal: 1+ Gbps)
+- **Latency**: <50ms overhead (target: <2ms for MVP)
+- **Packet Loss**: <5%
+- **Stability**: 3-hour test, zero packet loss
+
+### Quality Metrics (Target for MVP)
+- **Unit Test Coverage**: 85%+
+- **Integration Tests**: 50+ tests
+- **Security Vulnerabilities**: 0 critical
+- **Documentation Pages**: 20+ markdown files
 
 ---
 
@@ -120,7 +285,7 @@ TICKET-001 → TICKET-005 → TICKET-007 → TICKET-008 → TICKET-011
 
 ### Bootstrap Node Deployment
 
-**Objective**: Deploy 3 bootstrap nodes for DHT network entry
+**Objective**: Deploy 3 bootstrap nodes for Kademlia DHT network entry
 
 **Geographic Distribution**:
 - **US East** (Virginia/New York) - Primary
@@ -147,177 +312,74 @@ TICKET-001 → TICKET-005 → TICKET-007 → TICKET-008 → TICKET-011
 
 **SLA Target**: 99.9% uptime (43 minutes downtime/month)
 
-**Documentation**: `docs/4-OPERATIONS/BOOTSTRAP_NODE_DEPLOYMENT.md`
-
----
-
-## Long-Term Vision
-
-### v0.3.0-alpha: QUIC Migration (Weeks 5-10)
-
-**Objective**: Replace UDP with QUIC for better NAT traversal and reliability
-
-**Key Features**:
-- QUIC transport with quic-go library
-- 0-RTT reconnection for faster handshakes
-- Built-in congestion control (BBR/Cubic)
-- Connection migration for IP address changes
-- Improved NAT traversal over raw UDP
-
-**Estimated Timeline**: 6 weeks after v0.2.0-alpha release
-
----
-
-### v1.0.0: Production Release (6-12 Months)
-
-**Objective**: Production-ready quantum-safe DPN with enterprise features
-
-**Core Features**:
-- ✅ Kademlia DHT (from v0.2.0-alpha)
-- ✅ QUIC transport (from v0.3.0-alpha)
-- ✅ Post-quantum cryptography (ML-KEM-1024, ML-DSA-87)
-- Advanced NAT traversal (STUN/TURN fallback)
-- Multi-hop routing (3-5 hops configurable)
-- Traffic obfuscation (WebSocket mimicry)
-- Atomic clock synchronization (Rubidium/Cesium)
-- TPM/SGX attestation for exit nodes
-
-**Performance Targets**:
-- 6-7 Gbps single-connection throughput
-- <2ms latency overhead
-- 99.9% uptime
-- 1000+ concurrent connections per relay
-
-**Platform Support**:
-- Linux (amd64, arm64) - CLI and GUI
-- macOS (arm64, x86_64) - Native app
-- Windows (x86_64) - Native app
-- iOS - Mobile app
-- Android - Mobile app
-
-**Certifications**:
-- SOC 2 Type II
-- HIPAA compliance
-- PCI DSS ready
-
----
-
-## Project Timeline (8-Week Focus)
-
-```
-Week 1-2: Sprint 0 - DHT Foundation
-├─ TICKET-001: PeerID generation
-├─ TICKET-002: XOR distance
-├─ TICKET-003: PeerInfo structures
-├─ TICKET-004: k-bucket LRU
-├─ TICKET-005: Routing table
-├─ TICKET-006: UDP packet protocol
-└─ TICKET-007: PING/PONG handlers
-
-Week 3-4: Sprint 1 - DHT Operations
-├─ TICKET-008: FIND_NODE iterative lookup
-├─ TICKET-009: Bootstrap integration
-├─ TICKET-010: ML-DSA-87 integration
-├─ TICKET-011: STORE/FIND_VALUE
-├─ TICKET-012: NAT detection
-├─ TICKET-013: Routing persistence
-├─ TICKET-014: Monitoring
-└─ TICKET-015: Integration tests
-
-Week 5-6: Testing & Validation
-├─ 3-node local network testing
-├─ 10-node distributed network testing
-├─ Performance regression tests
-├─ Bootstrap node deployment (3 regions)
-└─ End-to-end standalone operation
-
-Week 7-8: Documentation & Release
-├─ README.md with quick start
-├─ INSTALLATION.md for all platforms
-├─ TROUBLESHOOTING.md
-├─ Performance benchmarks
-├─ Release binaries (Linux amd64/arm64, macOS arm64)
-└─ v0.2.0-alpha release to GitHub
-```
-
----
-
-## Key Metrics
-
-### Development Velocity
-- **Current Sprint**: Sprint 0 (DHT Foundation)
-- **Sprint Duration**: 2 weeks
-- **Total Tickets**: 15 (7 in Sprint 0, 8 in Sprint 1)
-- **Estimated Effort**: 36 developer-days
-
-### Performance Baselines (from v0.1.0-alpha)
-- **Throughput**: 28.3 Mbps (target: maintain ≥25 Mbps)
-- **Latency**: <50ms overhead
-- **Packet Loss**: <5%
-- **Stability**: 3-hour test, zero packet loss
-
-### Quality Metrics (Target for v0.2.0-alpha)
-- **Unit Test Coverage**: 85%+
-- **Integration Tests**: 50+ tests
-- **Security Vulnerabilities**: 0 critical
-- **Documentation Pages**: 10+ markdown files
-
 ---
 
 ## Dependencies & Risks
 
 ### Technical Dependencies
-- Go 1.21+ (programming language)
-- cloudflare/circl (post-quantum cryptography)
-- Existing v11 UDP transport (proven stable)
-- 3 bootstrap nodes (infrastructure dependency)
+- Go 1.25.4 (programming language)
+- cloudflare/circl v1.6.1 (post-quantum cryptography)
+- gorilla/websocket v1.5.3 (WebSocket transport)
+- PostgreSQL 14+ (database)
+- Prometheus 2.45+ / Grafana 10+ (monitoring)
+- Ethereum mainnet (smart contract deployment)
+- React + TypeScript (public map frontend)
 
 ### Risks & Mitigations
 
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
-| DHT convergence failure | Medium | High | Extensive 10K peer simulation + testnet validation |
-| NAT traversal <85% success | High | Medium | UDP punch-through + relay fallback ensures 100% connectivity |
-| Bootstrap nodes offline | Low | High | 3-5 nodes across regions, 99.9% uptime SLA |
-| Performance regression | Low | High | Automated regression tests maintain v11 baseline (28.3 Mbps) |
+| DHT convergence failure | Medium | High | Extensive simulation + testnet validation before mainnet |
+| Smart contract gas costs >$10 | Medium | Medium | Gas optimization (target: <20,000 gas per registration) |
+| CGNAT traversal <95% success | High | Medium | UDP hole punching + relay fallback ensures 100% connectivity |
+| Performance regression vs v0.1.0-alpha | Low | High | Automated regression tests maintain 28.3 Mbps baseline |
+| Ethereum RPC rate limiting | Medium | Medium | Caching (10-minute TTL), multiple RPC providers |
 
 ### Blockers (None Currently)
-No active blockers. v0.1.0-alpha achieved strong performance, architecture proven.
+No active blockers. Planning phase complete, architecture validated, sprint status generated.
 
 ---
 
 ## Resources
 
 ### Code Repository
-- **Language**: Go 1.21+
-- **Architecture**: Layer 3 (TUN device) + UDP + PQC
-- **Lines of Code**: ~8,000 (estimated for v0.2.0-alpha)
+- **Language**: Go 1.25.4
+- **Architecture**: Layer 2 (TAP device) + WebSocket Secure + PQC + Blockchain
+- **Lines of Code**: ~15,000 (estimated for MVP)
+- **Repository**: GitHub (private during development, public at beta launch)
 
 ### Documentation
-- **Architecture**: 4 documents (CURRENT_STATE, TARGET_STATE, KADEMLIA_DHT_ARCHITECTURE, MIGRATION_PATH)
-- **Implementation**: 3 documents (TICKETS, DEPLOYMENT, TESTING)
-- **Benchmarks**: 2 documents (performance, video streaming)
+- **PRD**: `docs/prd.md` (44 FR, 31 NFR, 6 epics, 46 stories)
+- **Architecture**: `docs/2-ARCHITECTURE/KADEMLIA_DHT_ARCHITECTURE.md` (4,053 lines)
+- **Sprint Status**: `.bmad-ephemeral/sprint-status.yaml` (tracking file)
+- **Workflow Status**: `docs/bmm-workflow-status.yaml` (BMAD methodology tracking)
 
 ### Infrastructure
 - **Bootstrap Nodes**: 3 nodes (US, EU, Asia) - $30-45/month
-- **Test Nodes**: 3-4 machines for distributed testing
+- **Relay Nodes**: 5+ nodes for beta (community-operated)
+- **Ethereum Mainnet**: Smart contract deployment + ENS registration
 - **CI/CD**: GitHub Actions (free tier)
+- **Monitoring**: Self-hosted Prometheus + Grafana
+- **Public Map**: Vercel or Netlify (free tier)
 
 ---
 
 ## Next Actions
 
-### This Week (Week 1)
-1. Begin TICKET-001: PeerID generation from ML-DSA-87 keys
-2. Implement TICKET-002: XOR distance calculations
-3. Design TICKET-003: PeerInfo data structures
-4. Start TICKET-004: k-bucket LRU eviction logic
+### Today (November 12, 2025)
+1. 🔄 **Create Epic 1 Tech Context** - Run `/bmad:bmm:workflows:epic-tech-context` for Epic 1
+2. 📋 **Draft Story 1.1** - Run `/bmad:bmm:workflows:create-story` to generate Story 1.1 (Monorepo Setup)
+3. 📋 **Begin Story 1.1 Development** - Run `/bmad:bmm:workflows:dev-story` to implement monorepo structure
 
-### Next Week (Week 2)
-1. Complete TICKET-005: 256-bucket routing table
-2. Define TICKET-006: UDP packet protocol format
-3. Implement TICKET-007: PING/PONG handlers
-4. Begin integration testing (3-node local network)
+### This Week (Week 1 - Epic 1)
+- Complete Story 1.1: Monorepo Setup (2 days)
+- Start Story 1.2: Hybrid Key Exchange Implementation (3 days)
+- Begin Story 1.3: Hybrid Digital Signatures (2 days)
+
+### Next Week (Week 2 - Epic 1)
+- Complete remaining Epic 1 stories (1.4-1.7)
+- Run Epic 1 retrospective
+- Context Epic 2 for next sprint
 
 ---
 
@@ -338,11 +400,12 @@ No active blockers. v0.1.0-alpha achieved strong performance, architecture prove
 **Owner**: Technical Lead + Product Manager
 **Review Frequency**: Weekly (every Monday)
 **Change Log**:
-- 2025-11-10: Initial consolidated roadmap created
-- Next review: 2025-11-17 (after Sprint 0 Week 1)
+- 2025-11-10: Initial consolidated roadmap created (v0.2.0-alpha DHT focus)
+- 2025-11-12: Updated for full MVP development (6 epics, 46 stories) after architecture expansion and solutioning gate check completion
+- Next review: 2025-11-19 (after Epic 1 Week 1)
 
 ---
 
-**ShadowMesh** - Building the future of quantum-safe decentralized networking, one sprint at a time.
+**ShadowMesh** - Building the world's first post-quantum decentralized private network (DPN).
 
-**Current Focus**: Kademlia DHT implementation for standalone operation (v0.2.0-alpha)
+**Current Focus**: MVP Development - Epic 1 (Foundation & Cryptography)
