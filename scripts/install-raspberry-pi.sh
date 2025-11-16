@@ -66,10 +66,20 @@ if ! command -v go &> /dev/null; then
     export PATH=$PATH:/usr/local/go/bin
 
     # Verify installation
-    if /usr/local/go/bin/go version &> /dev/null; then
-        echo "✅ Go installed successfully: $(/usr/local/go/bin/go version)"
+    echo "🔍 Verifying Go installation..."
+    if [[ -f /usr/local/go/bin/go ]]; then
+        GO_VERSION=$(/usr/local/go/bin/go version 2>&1)
+        if [[ $? -eq 0 ]]; then
+            echo "✅ Go installed successfully: $GO_VERSION"
+        else
+            echo "❌ Error: Go binary exists but failed to run"
+            echo "   Error: $GO_VERSION"
+            exit 1
+        fi
     else
-        echo "❌ Error: Go installation failed"
+        echo "❌ Error: Go binary not found at /usr/local/go/bin/go"
+        echo "   Checking extraction..."
+        ls -la /usr/local/go/ 2>&1 || echo "   /usr/local/go/ does not exist"
         exit 1
     fi
 else
