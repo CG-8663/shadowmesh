@@ -37,7 +37,10 @@ echo "Step 1: Checking for Go installation..."
 if ! command -v go &> /dev/null; then
     echo "⚠️  Go is not installed. Installing Go 1.21.5..."
 
-    cd /tmp
+    # Use home directory instead of /tmp (which may be full)
+    DOWNLOAD_DIR="$ACTUAL_HOME/.shadowmesh-install"
+    mkdir -p "$DOWNLOAD_DIR"
+    cd "$DOWNLOAD_DIR"
 
     # Download with progress and timeout
     echo "📥 Downloading Go (this may take a few minutes)..."
@@ -52,7 +55,8 @@ if ! command -v go &> /dev/null; then
     tar -C /usr/local -xzf go1.21.5.linux-arm64.tar.gz
 
     echo "🧹 Cleaning up..."
-    rm go1.21.5.linux-arm64.tar.gz
+    cd /
+    rm -rf "$DOWNLOAD_DIR"
 
     # Add to PATH for current user
     if ! grep -q "/usr/local/go/bin" "$ACTUAL_HOME/.bashrc"; then
