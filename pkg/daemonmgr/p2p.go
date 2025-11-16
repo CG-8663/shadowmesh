@@ -2,8 +2,8 @@ package daemonmgr
 
 import (
 	"context"
-	"crypto/ed25519"
 	"crypto/rand"
+	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -67,11 +67,9 @@ func (p *P2PConnection) Connect(peerAddr string) error {
 	log.Printf("Connecting to peer WebSocket: %s", wsURL)
 
 	// Configure TLS (skip verify for self-signed certs in testing)
-	// Use TLS 1.3 which supports Ed25519 natively
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true, // TODO: Proper certificate validation
-		MinVersion:         tls.VersionTLS13,
-		MaxVersion:         tls.VersionTLS13,
+		MinVersion:         tls.VersionTLS12,
 	}
 
 	dialer := &websocket.Dialer{
@@ -115,8 +113,7 @@ func (p *P2PConnection) Listen(listenAddr string) error {
 
 	tlsConfig := &tls.Config{
 		Certificates: []tls.Certificate{cert},
-		MinVersion:   tls.VersionTLS13,
-		MaxVersion:   tls.VersionTLS13,
+		MinVersion:   tls.VersionTLS12,
 	}
 
 	// Create HTTP server for WebSocket upgrades
@@ -291,10 +288,10 @@ func (p *P2PConnection) setConnected(connected bool) {
 
 // generateSelfSignedCert generates a self-signed TLS certificate
 func generateSelfSignedCert() (tls.Certificate, error) {
-	// Generate Ed25519 private key (modern, fast, widely accepted)
-	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
+	// Generate RSA 4096-bit key (satisfies strict crypto policies)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
-		return tls.Certificate{}, fmt.Errorf("failed to generate Ed25519 key: %w", err)
+		return tls.Certificate{}, fmt.Errorf("failed to generate RSA key: %w", err)
 	}
 
 	// Create certificate template
@@ -304,7 +301,7 @@ func generateSelfSignedCert() (tls.Certificate, error) {
 	}
 
 	notBefore := time.Now()
-	notAfter := notBefore.Add(24 * time.Hour)
+	notAfter := notBefore.Add(365 * 24 * time.Hour) // 1 year validity
 
 	template := x509.Certificate{
 		SerialNumber: serialNumber,
@@ -314,13 +311,13 @@ func generateSelfSignedCert() (tls.Certificate, error) {
 		},
 		NotBefore:             notBefore,
 		NotAfter:              notAfter,
-		KeyUsage:              x509.KeyUsageDigitalSignature,
+		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
 		BasicConstraintsValid: true,
 	}
 
 	// Self-sign the certificate
-	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, publicKey, privateKey)
+	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)
 	if err != nil {
 		return tls.Certificate{}, fmt.Errorf("failed to create certificate: %w", err)
 	}
