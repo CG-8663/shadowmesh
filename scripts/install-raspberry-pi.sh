@@ -49,7 +49,13 @@ if ! command -v go &> /dev/null; then
 
     export PATH=$PATH:/usr/local/go/bin
 
-    echo "✅ Go installed successfully"
+    # Verify installation
+    if /usr/local/go/bin/go version &> /dev/null; then
+        echo "✅ Go installed successfully: $(/usr/local/go/bin/go version)"
+    else
+        echo "❌ Error: Go installation failed"
+        exit 1
+    fi
 else
     GO_VERSION=$(go version)
     echo "✅ Go is already installed: $GO_VERSION"
@@ -94,8 +100,11 @@ echo ""
 echo "Step 4: Building ShadowMesh daemon..."
 cd "$SHADOWMESH_DIR"
 
+# Ensure Go is available
+export PATH=$PATH:/usr/local/go/bin
+
 # Build as actual user
-sudo -u $ACTUAL_USER /usr/local/go/bin/go build -o bin/shadowmesh-daemon ./cmd/shadowmesh-daemon/
+sudo -u $ACTUAL_USER env PATH=$PATH /usr/local/go/bin/go build -o bin/shadowmesh-daemon ./cmd/shadowmesh-daemon/
 
 if [[ ! -f bin/shadowmesh-daemon ]]; then
     echo "❌ Error: Build failed"
