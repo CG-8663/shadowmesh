@@ -57,7 +57,8 @@ case "$ARCH" in
 esac
 
 if ! command -v go &> /dev/null; then
-    echo "⚠️  Go is not installed. Installing Go 1.21.5 for $GO_ARCH..."
+    GO_VERSION="1.23.3"
+    echo "⚠️  Go is not installed. Installing Go ${GO_VERSION} for $GO_ARCH..."
 
     # Use home directory instead of /tmp (which may be full)
     DOWNLOAD_DIR="$ACTUAL_HOME/.shadowmesh-install"
@@ -66,7 +67,7 @@ if ! command -v go &> /dev/null; then
 
     # Download with progress and timeout
     echo "📥 Downloading Go (this may take a few minutes)..."
-    GO_URL="https://go.dev/dl/go1.21.5.linux-${GO_ARCH}.tar.gz"
+    GO_URL="https://go.dev/dl/go${GO_VERSION}.linux-${GO_ARCH}.tar.gz"
     if ! wget --show-progress --timeout=60 "$GO_URL"; then
         echo "❌ Error: Failed to download Go from $GO_URL"
         echo "   Please check your internet connection and try again"
@@ -75,7 +76,7 @@ if ! command -v go &> /dev/null; then
 
     echo "📦 Extracting Go..."
     rm -rf /usr/local/go
-    tar -C /usr/local -xzf "go1.21.5.linux-${GO_ARCH}.tar.gz"
+    tar -C /usr/local -xzf "go${GO_VERSION}.linux-${GO_ARCH}.tar.gz"
 
     echo "🧹 Cleaning up..."
     cd /

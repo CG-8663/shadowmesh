@@ -1,6 +1,6 @@
 module github.com/shadowmesh/shadowmesh
 
-go 1.21.0
+go 1.22.0
 
 require (
 	github.com/cloudflare/circl v1.6.1
