@@ -2,8 +2,8 @@ package daemonmgr
 
 import (
 	"context"
+	"crypto/ed25519"
 	"crypto/rand"
-	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -302,10 +302,10 @@ func (p *P2PConnection) setConnected(connected bool) {
 
 // generateSelfSignedCert generates a self-signed TLS certificate
 func generateSelfSignedCert() (tls.Certificate, error) {
-	// Generate RSA 2048-bit private key (more compatible than ECDSA P-256)
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	// Generate Ed25519 private key (modern, fast, widely accepted)
+	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
-		return tls.Certificate{}, fmt.Errorf("failed to generate RSA key: %w", err)
+		return tls.Certificate{}, fmt.Errorf("failed to generate Ed25519 key: %w", err)
 	}
 
 	// Create certificate template
@@ -325,13 +325,13 @@ func generateSelfSignedCert() (tls.Certificate, error) {
 		},
 		NotBefore:             notBefore,
 		NotAfter:              notAfter,
-		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
+		KeyUsage:              x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
 		BasicConstraintsValid: true,
 	}
 
 	// Self-sign the certificate
-	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.Public(), privateKey)
+	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, publicKey, privateKey)
 	if err != nil {
 		return tls.Certificate{}, fmt.Errorf("failed to create certificate: %w", err)
 	}
