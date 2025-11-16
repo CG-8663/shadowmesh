@@ -153,14 +153,20 @@ cd "$SHADOWMESH_DIR"
 # Ensure Go is available
 export PATH=$PATH:/usr/local/go/bin
 export GOPATH=$ACTUAL_HOME/go
+export GOCACHE=$ACTUAL_HOME/.cache/go-build
+export GOTMPDIR=$ACTUAL_HOME/.cache/go-tmp
+
+# Create cache directories
+mkdir -p "$GOCACHE" "$GOTMPDIR"
+chown -R $ACTUAL_USER:$(id -gn $ACTUAL_USER) "$GOCACHE" "$GOTMPDIR"
 
 # Download dependencies first
 echo "📦 Downloading dependencies..."
-sudo -u $ACTUAL_USER env PATH=$PATH GOPATH=$GOPATH /usr/local/go/bin/go mod download
+sudo -u $ACTUAL_USER env PATH=$PATH GOPATH=$GOPATH GOCACHE=$GOCACHE GOTMPDIR=$GOTMPDIR /usr/local/go/bin/go mod download
 
 # Build as actual user
 echo "🔨 Compiling daemon..."
-sudo -u $ACTUAL_USER env PATH=$PATH GOPATH=$GOPATH /usr/local/go/bin/go build -o bin/shadowmesh-daemon ./cmd/shadowmesh-daemon/
+sudo -u $ACTUAL_USER env PATH=$PATH GOPATH=$GOPATH GOCACHE=$GOCACHE GOTMPDIR=$GOTMPDIR /usr/local/go/bin/go build -o bin/shadowmesh-daemon ./cmd/shadowmesh-daemon/
 
 if [[ ! -f bin/shadowmesh-daemon ]]; then
     echo "❌ Error: Build failed"
