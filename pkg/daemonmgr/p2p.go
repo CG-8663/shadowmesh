@@ -104,8 +104,13 @@ func (p *P2PConnection) Listen(listenAddr string) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/p2p", p.handleWebSocket)
 
+	// Create IPv4 TCP listener explicitly (not IPv6-only)
+	listener, err := net.Listen("tcp4", listenAddr)
+	if err != nil {
+		return fmt.Errorf("failed to create IPv4 listener: %w", err)
+	}
+
 	server := &http.Server{
-		Addr:    listenAddr,
 		Handler: mux,
 	}
 
@@ -113,8 +118,8 @@ func (p *P2PConnection) Listen(listenAddr string) error {
 	p.wg.Add(1)
 	go func() {
 		defer p.wg.Done()
-		log.Printf("WebSocket server listening on %s (unencrypted transport, encrypted frames)", listenAddr)
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Printf("WebSocket server listening on %s (IPv4, unencrypted transport, encrypted frames)", listenAddr)
+		if err := server.Serve(listener); err != nil && err != http.ErrServerClosed {
 			log.Printf("⚠️  WebSocket server error: %v", err)
 		}
 	}()
