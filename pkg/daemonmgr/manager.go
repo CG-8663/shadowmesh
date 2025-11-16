@@ -133,6 +133,11 @@ func (dm *DaemonManager) Start(ctx context.Context) error {
 		return fmt.Errorf("API initialization failed: %w", err)
 	}
 
+	// Phase 5: Start P2P WebSocket listener
+	if err := dm.initP2PListener(); err != nil {
+		return fmt.Errorf("P2P listener initialization failed: %w", err)
+	}
+
 	log.Printf("✅ All daemon components initialized successfully")
 
 	return nil
@@ -385,7 +390,6 @@ func (dm *DaemonManager) initNATComponents() error {
 	return nil
 }
 
-
 // initAPI initializes the HTTP API server
 func (dm *DaemonManager) initAPI() error {
 	log.Printf("Starting HTTP API on %s", dm.config.Daemon.ListenAddress)
@@ -406,6 +410,26 @@ func (dm *DaemonManager) initAPI() error {
 	}()
 
 	log.Printf("✅ HTTP API started successfully")
+
+	return nil
+}
+
+// initP2PListener initializes the P2P WebSocket listener
+func (dm *DaemonManager) initP2PListener() error {
+	log.Printf("Starting P2P WebSocket listener on port 9001...")
+
+	// Initialize P2P connection
+	if dm.p2pConnection == nil {
+		dm.p2pConnection = NewP2PConnection()
+	}
+
+	// Start listening for incoming WebSocket connections
+	listenAddr := ":9001" // Listen on all interfaces, port 9001
+	if err := dm.p2pConnection.Listen(listenAddr); err != nil {
+		return fmt.Errorf("failed to start P2P listener: %w", err)
+	}
+
+	log.Printf("✅ P2P WebSocket listener started on port 9001")
 
 	return nil
 }
