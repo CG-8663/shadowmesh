@@ -1,0 +1,48 @@
+# ShadowMesh Daemon Configuration
+# Story 2.8: Direct P2P Integration Test
+#
+# This configuration file defines settings for the ShadowMesh daemon,
+# which integrates all Epic 2 components into a working P2P tunnel.
+
+daemon:
+  # HTTP API listen address (for CLI communication)
+  listen_address: "127.0.0.1:9090"
+
+  # Log level: debug, info, warn, error
+  log_level: "info"
+
+network:
+  # TAP device name (tap0, tap1, etc.)
+  tap_device: "tap0"
+
+  # Local IP address with CIDR notation
+  # Example: "10.0.0.1/24" creates a /24 subnet
+  local_ip: "10.0.0.1/24"
+
+encryption:
+  # ChaCha20-Poly1305 encryption key (64 hex characters = 32 bytes)
+  # IMPORTANT: Both peers MUST use the same key
+  # Generate with: openssl rand -hex 32
+  key: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+
+peer:
+  # Peer address (host:port) - set dynamically via CLI 'connect' command
+  # Leave empty in config file, will be populated by 'shadowmesh connect' command
+  address: ""
+
+nat:
+  # Enable NAT detection and traversal
+  enabled: true
+
+  # STUN server for NAT detection
+  stun_server: "stun.l.google.com:19302"
+
+# Example configurations for different scenarios:
+#
+# Machine A (Initiator):
+#   network.local_ip: "10.0.0.1/24"
+#   peer.address: ""  # Set via: shadowmesh connect 192.168.1.100:9001
+#
+# Machine B (Responder):
+#   network.local_ip: "10.0.0.2/24"
+#   peer.address: ""  # Waits for incoming connection

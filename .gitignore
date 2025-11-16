@@ -1,11 +1,12 @@
 # Build artifacts
-bin/
 dist/
 build/
 *.exe
 *.dll
 *.so
 *.dylib
+# Allow bin/ for daemon binary (Story 2-8)
+# bin/
 
 # Development
 *.test
@@ -30,7 +31,8 @@ Thumbs.db
 *.pem
 *.p12
 config/
-configs/
+# Allow configs/ for example configurations (Story 2-8)
+# configs/
 keys/
 keys-*/
 
@@ -39,13 +41,17 @@ tmp/
 temp/
 
 # Documentation
-docs/
+# Allow docs/ for Story 2-8 documentation
+# docs/
 
 # Releases
 *-release/
 
 # Development tools
-.bmad*
+# Allow .bmad-ephemeral/ for Story 2-8 retrospective and story files
+.bmad-core/
+.bmad-infrastructure-devops/
+# .bmad-ephemeral/
 .claude/
 .gemini/
 
@@ -58,13 +64,16 @@ docs/
 !SECURITY.md
 !CHANGELOG.md
 
-# Source code
+# Source code - Allow Story 2-8 implementation
 client/
-cmd/
-pkg/
+# Allow cmd/shadowmesh-daemon/ for Story 2-8
+# cmd/
+# Allow pkg/daemonmgr/ and pkg/layer2/ for Story 2-8
+# pkg/
 shared/
 test/
-scripts/
+# Allow scripts/ for installation script
+# scripts/
 contracts/
 
 # Dot files

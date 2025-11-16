@@ -1,0 +1,21 @@
+# ShadowMesh Daemon Test Configuration
+# Story 2.8: Direct P2P Integration Test
+
+daemon:
+  listen_address: "127.0.0.1:9090"
+  log_level: "info"
+
+network:
+  tap_device: "tap0"
+  local_ip: "10.0.0.1/24"
+
+encryption:
+  # Shared key for both peers (generated with: openssl rand -hex 32)
+  key: "683619f144d2c3354f47c51c7470042c26ff9f1d44d17140235d50b708cdc059"
+
+peer:
+  address: ""
+
+nat:
+  enabled: true
+  stun_server: "stun.l.google.com:19302"
