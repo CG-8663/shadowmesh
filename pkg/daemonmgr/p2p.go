@@ -61,19 +61,13 @@ func (p *P2PConnection) Connect(peerAddr string) error {
 		return fmt.Errorf("invalid peer address: %w", err)
 	}
 
-	// Create WebSocket URL (always use WSS for security)
-	wsURL := fmt.Sprintf("wss://%s:%s/p2p", host, port)
+	// Create WebSocket URL (use WS not WSS - frames are already encrypted)
+	// Traffic is encrypted at frame level with ChaCha20-Poly1305, so TLS is redundant
+	wsURL := fmt.Sprintf("ws://%s:%s/p2p", host, port)
 
 	log.Printf("Connecting to peer WebSocket: %s", wsURL)
 
-	// Configure TLS (skip verify for self-signed certs in testing)
-	tlsConfig := &tls.Config{
-		InsecureSkipVerify: true, // TODO: Proper certificate validation
-		MinVersion:         tls.VersionTLS12,
-	}
-
 	dialer := &websocket.Dialer{
-		TLSClientConfig:  tlsConfig,
 		HandshakeTimeout: 10 * time.Second,
 	}
 
@@ -105,33 +99,22 @@ func (p *P2PConnection) Connect(peerAddr string) error {
 
 // Listen starts WebSocket server for incoming connections
 func (p *P2PConnection) Listen(listenAddr string) error {
-	// Create TLS certificate
-	cert, err := generateSelfSignedCert()
-	if err != nil {
-		return fmt.Errorf("failed to generate TLS certificate: %w", err)
-	}
-
-	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		MinVersion:   tls.VersionTLS12,
-	}
-
 	// Create HTTP server for WebSocket upgrades
+	// No TLS - frames are already encrypted with ChaCha20-Poly1305
 	mux := http.NewServeMux()
 	mux.HandleFunc("/p2p", p.handleWebSocket)
 
 	server := &http.Server{
-		Addr:      listenAddr,
-		Handler:   mux,
-		TLSConfig: tlsConfig,
+		Addr:    listenAddr,
+		Handler: mux,
 	}
 
 	// Start server in background
 	p.wg.Add(1)
 	go func() {
 		defer p.wg.Done()
-		log.Printf("WebSocket server listening on %s", listenAddr)
-		if err := server.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
+		log.Printf("WebSocket server listening on %s (unencrypted transport, encrypted frames)", listenAddr)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Printf("⚠️  WebSocket server error: %v", err)
 		}
 	}()
