@@ -150,6 +150,13 @@ echo ""
 echo "Step 4: Building ShadowMesh daemon..."
 cd "$SHADOWMESH_DIR"
 
+# Clean /tmp if it's getting full (common on Raspberry Pi with tmpfs)
+TMP_USAGE=$(df /tmp | awk 'NR==2 {print $5}' | sed 's/%//')
+if [[ $TMP_USAGE -gt 80 ]]; then
+    echo "⚠️  /tmp is ${TMP_USAGE}% full, cleaning old build cache..."
+    rm -rf /tmp/go-build* 2>/dev/null || true
+fi
+
 # Ensure Go is available
 export PATH=$PATH:/usr/local/go/bin
 export GOPATH=$ACTUAL_HOME/go
