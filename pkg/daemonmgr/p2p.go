@@ -67,16 +67,11 @@ func (p *P2PConnection) Connect(peerAddr string) error {
 	log.Printf("Connecting to peer WebSocket: %s", wsURL)
 
 	// Configure TLS (skip verify for self-signed certs in testing)
+	// Use TLS 1.3 which supports Ed25519 natively
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: true, // TODO: Proper certificate validation
-		MinVersion:         tls.VersionTLS12,
+		MinVersion:         tls.VersionTLS13,
 		MaxVersion:         tls.VersionTLS13,
-		CipherSuites: []uint16{
-			tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-			tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-		},
 	}
 
 	dialer := &websocket.Dialer{
@@ -120,14 +115,8 @@ func (p *P2PConnection) Listen(listenAddr string) error {
 
 	tlsConfig := &tls.Config{
 		Certificates: []tls.Certificate{cert},
-		MinVersion:   tls.VersionTLS12,
+		MinVersion:   tls.VersionTLS13,
 		MaxVersion:   tls.VersionTLS13,
-		CipherSuites: []uint16{
-			tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-			tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-		},
 	}
 
 	// Create HTTP server for WebSocket upgrades
