@@ -425,7 +425,7 @@ func (dm *DaemonManager) initAPI() error {
 
 // initP2PListener initializes the P2P WebSocket listener
 func (dm *DaemonManager) initP2PListener() error {
-	log.Printf("Starting P2P WebSocket listener on port 443...")
+	log.Printf("Starting P2P WebSocket listener on port 8080...")
 
 	// Initialize P2P connection
 	if dm.p2pConnection == nil {
@@ -433,13 +433,13 @@ func (dm *DaemonManager) initP2PListener() error {
 	}
 
 	// Start listening for incoming WebSocket connections
-	// Port 443 (HTTPS) bypasses most firewalls and NAT restrictions
-	listenAddr := ":443"
+	// Port 8080 (HTTP alternate) - commonly allowed through firewalls
+	listenAddr := ":8080"
 	if err := dm.p2pConnection.Listen(listenAddr); err != nil {
 		return fmt.Errorf("failed to start P2P listener: %w", err)
 	}
 
-	log.Printf("✅ P2P WebSocket listener started on port 443")
+	log.Printf("✅ P2P WebSocket listener started on port 8080")
 
 	return nil
 }
