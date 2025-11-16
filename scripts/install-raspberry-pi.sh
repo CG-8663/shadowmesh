@@ -172,9 +172,17 @@ chown -R $ACTUAL_USER:$(id -gn $ACTUAL_USER) "$GOCACHE" "$GOTMPDIR"
 echo "📦 Downloading dependencies..."
 sudo -u $ACTUAL_USER env PATH=$PATH GOPATH=$GOPATH GOCACHE=$GOCACHE GOTMPDIR=$GOTMPDIR TMPDIR=$TMPDIR /usr/local/go/bin/go mod download
 
-# Build as actual user
+# Build as actual user (force all temp/cache to root partition)
 echo "🔨 Compiling daemon..."
-sudo -u $ACTUAL_USER env PATH=$PATH GOPATH=$GOPATH GOCACHE=$GOCACHE GOTMPDIR=$GOTMPDIR TMPDIR=$TMPDIR /usr/local/go/bin/go build -o bin/shadowmesh-daemon ./cmd/shadowmesh-daemon/
+sudo -u $ACTUAL_USER env \
+  PATH=$PATH \
+  GOPATH=$GOPATH \
+  GOCACHE=$GOCACHE \
+  GOTMPDIR=$GOTMPDIR \
+  TMPDIR=$GOTMPDIR \
+  TEMP=$GOTMPDIR \
+  TMP=$GOTMPDIR \
+  /usr/local/go/bin/go build -o bin/shadowmesh-daemon ./cmd/shadowmesh-daemon/
 
 if [[ ! -f bin/shadowmesh-daemon ]]; then
     echo "❌ Error: Build failed"
