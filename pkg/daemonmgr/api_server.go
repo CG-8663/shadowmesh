@@ -1,6 +1,7 @@
 package daemonmgr
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -51,7 +52,9 @@ func (api *DaemonAPI) Start() error {
 // Stop gracefully stops the API server
 func (api *DaemonAPI) Stop() error {
 	log.Println("Stopping daemon API server")
-	return api.server.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	return api.server.Shutdown(ctx)
 }
 
 // ConnectRequest represents a connect request from CLI

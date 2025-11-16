@@ -147,6 +147,15 @@ func (dm *DaemonManager) Start(ctx context.Context) error {
 func (dm *DaemonManager) Stop() error {
 	log.Printf("Stopping daemon components...")
 
+	// Stop HTTP API server first (allows Ctrl+C to respond quickly)
+	if dm.daemonAPI != nil {
+		if err := dm.daemonAPI.Stop(); err != nil {
+			log.Printf("⚠️  Error stopping API server: %v", err)
+		} else {
+			log.Printf("✅ API server stopped")
+		}
+	}
+
 	// Stop frame router
 	if dm.frameRouterStop != nil {
 		close(dm.frameRouterStop)
