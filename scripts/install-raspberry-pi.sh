@@ -34,8 +34,30 @@ echo ""
 
 # Step 1: Check for Go installation
 echo "Step 1: Checking for Go installation..."
+
+# Detect architecture
+ARCH=$(uname -m)
+echo "Detected architecture: $ARCH"
+
+case "$ARCH" in
+    aarch64|arm64)
+        GO_ARCH="arm64"
+        ;;
+    armv7l|armv6l)
+        GO_ARCH="armv6l"
+        ;;
+    x86_64|amd64)
+        GO_ARCH="amd64"
+        ;;
+    *)
+        echo "❌ Error: Unsupported architecture: $ARCH"
+        echo "   Supported: aarch64/arm64, armv7l/armv6l, x86_64/amd64"
+        exit 1
+        ;;
+esac
+
 if ! command -v go &> /dev/null; then
-    echo "⚠️  Go is not installed. Installing Go 1.21.5..."
+    echo "⚠️  Go is not installed. Installing Go 1.21.5 for $GO_ARCH..."
 
     # Use home directory instead of /tmp (which may be full)
     DOWNLOAD_DIR="$ACTUAL_HOME/.shadowmesh-install"
@@ -44,15 +66,16 @@ if ! command -v go &> /dev/null; then
 
     # Download with progress and timeout
     echo "📥 Downloading Go (this may take a few minutes)..."
-    if ! wget --show-progress --timeout=60 https://go.dev/dl/go1.21.5.linux-arm64.tar.gz; then
-        echo "❌ Error: Failed to download Go"
+    GO_URL="https://go.dev/dl/go1.21.5.linux-${GO_ARCH}.tar.gz"
+    if ! wget --show-progress --timeout=60 "$GO_URL"; then
+        echo "❌ Error: Failed to download Go from $GO_URL"
         echo "   Please check your internet connection and try again"
         exit 1
     fi
 
     echo "📦 Extracting Go..."
     rm -rf /usr/local/go
-    tar -C /usr/local -xzf go1.21.5.linux-arm64.tar.gz
+    tar -C /usr/local -xzf "go1.21.5.linux-${GO_ARCH}.tar.gz"
 
     echo "🧹 Cleaning up..."
     cd /
