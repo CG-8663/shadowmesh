@@ -38,9 +38,21 @@ if ! command -v go &> /dev/null; then
     echo "⚠️  Go is not installed. Installing Go 1.21.5..."
 
     cd /tmp
-    wget -q https://go.dev/dl/go1.21.5.linux-arm64.tar.gz
+
+    # Download with progress and timeout
+    echo "📥 Downloading Go (this may take a few minutes)..."
+    if ! wget --show-progress --timeout=60 https://go.dev/dl/go1.21.5.linux-arm64.tar.gz; then
+        echo "❌ Error: Failed to download Go"
+        echo "   Please check your internet connection and try again"
+        exit 1
+    fi
+
+    echo "📦 Extracting Go..."
     rm -rf /usr/local/go
     tar -C /usr/local -xzf go1.21.5.linux-arm64.tar.gz
+
+    echo "🧹 Cleaning up..."
+    rm go1.21.5.linux-arm64.tar.gz
 
     # Add to PATH for current user
     if ! grep -q "/usr/local/go/bin" "$ACTUAL_HOME/.bashrc"; then
