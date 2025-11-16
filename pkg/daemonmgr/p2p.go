@@ -2,9 +2,8 @@ package daemonmgr
 
 import (
 	"context"
-	"crypto/ecdsa"
-	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -303,10 +302,10 @@ func (p *P2PConnection) setConnected(connected bool) {
 
 // generateSelfSignedCert generates a self-signed TLS certificate
 func generateSelfSignedCert() (tls.Certificate, error) {
-	// Generate ECDSA P-256 private key
-	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	// Generate RSA 2048-bit private key (more compatible than ECDSA P-256)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		return tls.Certificate{}, fmt.Errorf("failed to generate ECDSA key: %w", err)
+		return tls.Certificate{}, fmt.Errorf("failed to generate RSA key: %w", err)
 	}
 
 	// Create certificate template
@@ -332,7 +331,7 @@ func generateSelfSignedCert() (tls.Certificate, error) {
 	}
 
 	// Self-sign the certificate
-	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)
+	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.Public(), privateKey)
 	if err != nil {
 		return tls.Certificate{}, fmt.Errorf("failed to create certificate: %w", err)
 	}
