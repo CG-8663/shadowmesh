@@ -732,20 +732,74 @@ sudo tcpdump -i ens18 port 9545 -X -c 20
 
 ---
 
-## TCP Performance Optimization
+## Performance Optimization (CRITICAL)
 
-### Applying TCP Optimizations (RECOMMENDED)
+### Issue Identified: WebSocket Buffer Saturation
 
-The iperf3 test revealed TCP window scaling issues limiting throughput to 33% of available bandwidth. Apply these optimizations to improve performance by 2-3x.
+The iperf3 test revealed two critical bottlenecks:
 
-**Step 1: Pull latest scripts from GitHub**
+1. **WebSocket send buffer full errors** (PRIMARY) - 4KB buffers saturating with burst traffic
+2. **TCP window scaling issues** (SECONDARY) - Default buffers too small for high-latency paths
+
+Log evidence:
+```
+[INFO] ⚠️  Failed to send frame over WebSocket: send buffer full
+[INFO] ⚠️  Failed to send frame over WebSocket: send buffer full
+```
+
+These errors caused 1,797 retransmissions and limited throughput to 13.4 Mbps (33% utilization).
+
+### Solution: Two-Part Optimization
+
+**Part 1: Increase WebSocket Buffers (CRITICAL - requires code rebuild)**
+
+Code changes already pushed to GitHub (commit 0f504fa):
+- ReadBufferSize: 4KB -> 2MB
+- WriteBufferSize: 4KB -> 2MB
+
+**Part 2: Optimize TCP Settings (RECOMMENDED - runtime configuration)**
+
+Apply TCP BBR congestion control and increase kernel buffers.
+
+---
+
+### Applying All Optimizations
+
+**Step 1: Rebuild binaries with 2MB WebSocket buffers**
+
+```bash
+cd ~/shadowmesh
+
+# Pull latest code (includes buffer fix)
+git pull origin main
+
+# Option A: Automated rebuild and deploy
+sudo ./scripts/rebuild-and-deploy.sh
+
+# Option B: Manual rebuild
+go build -o bin/shadowmesh-daemon ./cmd/shadowmesh-daemon/
+sudo cp bin/shadowmesh-daemon /usr/local/bin/
+```
+
+**For relay server (run on 94.237.121.21):**
 
 ```bash
 cd ~/shadowmesh
 git pull origin main
+
+# Build Linux binary
+GOOS=linux GOARCH=amd64 go build -o bin/relay-server-linux ./cmd/relay-server/
+
+# Stop old server
+sudo pkill relay-server
+
+# Deploy and restart
+sudo mv bin/relay-server-linux /usr/local/bin/relay-server
+sudo chmod +x /usr/local/bin/relay-server
+nohup sudo /usr/local/bin/relay-server -port 9545 > /var/log/relay-server.log 2>&1 &
 ```
 
-**Step 2: Run optimization script on BOTH endpoints**
+**Step 2: Run TCP optimization script on BOTH endpoints**
 
 ```bash
 # On shadowmesh-001 (10.0.0.1)
