@@ -425,7 +425,7 @@ func (dm *DaemonManager) initAPI() error {
 
 // initP2PListener initializes the P2P WebSocket listener
 func (dm *DaemonManager) initP2PListener() error {
-	log.Printf("Starting P2P WebSocket listener on port 9001...")
+	log.Printf("Starting P2P WebSocket listener on port 993...")
 
 	// Initialize P2P connection
 	if dm.p2pConnection == nil {
@@ -433,12 +433,13 @@ func (dm *DaemonManager) initP2PListener() error {
 	}
 
 	// Start listening for incoming WebSocket connections
-	listenAddr := ":9001"
+	// Port 993 (IMAPS) - already forwarded through firewall
+	listenAddr := ":993"
 	if err := dm.p2pConnection.Listen(listenAddr); err != nil {
 		return fmt.Errorf("failed to start P2P listener: %w", err)
 	}
 
-	log.Printf("✅ P2P WebSocket listener started on port 9001")
+	log.Printf("✅ P2P WebSocket listener started on port 993")
 
 	return nil
 }
