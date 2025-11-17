@@ -37,6 +37,9 @@ type P2PConnection struct {
 	// State
 	connected   bool
 	connectedMu sync.RWMutex
+
+	// Connection callback - called when incoming connection is accepted
+	onConnectionAccepted func()
 }
 
 // NewP2PConnection creates a new P2P connection
@@ -258,6 +261,11 @@ func (p *P2PConnection) handleWebSocket(w http.ResponseWriter, r *http.Request) 
 	p.wg.Add(2)
 	go p.sendLoop()
 	go p.recvLoop()
+
+	// Trigger callback to notify DaemonManager to start frame router
+	if p.onConnectionAccepted != nil {
+		p.onConnectionAccepted()
+	}
 }
 
 // isConnected returns connection status
@@ -272,6 +280,11 @@ func (p *P2PConnection) setConnected(connected bool) {
 	p.connectedMu.Lock()
 	p.connected = connected
 	p.connectedMu.Unlock()
+}
+
+// SetOnConnectionAccepted sets the callback for when incoming connection is accepted
+func (p *P2PConnection) SetOnConnectionAccepted(callback func()) {
+	p.onConnectionAccepted = callback
 }
 
 // generateSelfSignedCert generates a self-signed TLS certificate

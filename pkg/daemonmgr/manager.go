@@ -89,7 +89,9 @@ type DaemonManager struct {
 	wg     sync.WaitGroup
 
 	// Frame routing
-	frameRouterStop chan struct{}
+	frameRouterStop    chan struct{}
+	frameRouterRunning bool
+	frameRouterMu      sync.Mutex
 }
 
 // NewDaemonManager creates a new daemon manager
@@ -241,6 +243,11 @@ func (dm *DaemonManager) Disconnect() error {
 		close(dm.frameRouterStop)
 		dm.frameRouterStop = make(chan struct{}) // Reset for next connection
 	}
+
+	// Reset frame router running flag
+	dm.frameRouterMu.Lock()
+	dm.frameRouterRunning = false
+	dm.frameRouterMu.Unlock()
 
 	// Close P2P connection
 	if dm.p2pConnection != nil {
@@ -432,6 +439,13 @@ func (dm *DaemonManager) initP2PListener() error {
 		dm.p2pConnection = NewP2PConnection()
 	}
 
+	// Register callback for incoming connections (responder mode)
+	dm.p2pConnection.SetOnConnectionAccepted(func() {
+		log.Printf("Incoming connection accepted - starting frame router on responder")
+		dm.startFrameRouter()
+		dm.setState(StateConnected, nil)
+	})
+
 	// Start listening for incoming WebSocket connections
 	// Port 8545 - already forwarded, no ISP interference
 	listenAddr := ":8545"
@@ -446,6 +460,15 @@ func (dm *DaemonManager) initP2PListener() error {
 
 // startFrameRouter starts the frame routing goroutines
 func (dm *DaemonManager) startFrameRouter() {
+	dm.frameRouterMu.Lock()
+	defer dm.frameRouterMu.Unlock()
+
+	// Prevent starting multiple times
+	if dm.frameRouterRunning {
+		log.Printf("Frame router already running, skipping duplicate start")
+		return
+	}
+
 	log.Printf("Starting frame router...")
 
 	// Outbound: TAP → Encrypt → WebSocket
@@ -462,6 +485,7 @@ func (dm *DaemonManager) startFrameRouter() {
 		dm.frameRouterInbound()
 	}()
 
+	dm.frameRouterRunning = true
 	log.Printf("✅ Frame router started")
 }
 
