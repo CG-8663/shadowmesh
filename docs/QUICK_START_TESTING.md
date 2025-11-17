@@ -765,6 +765,31 @@ Apply TCP BBR congestion control and increase kernel buffers.
 
 ### Applying All Optimizations
 
+**Quick Option: Fully Automated (Recommended)**
+
+For complete automation of rebuild, deployment, optimization, and testing:
+
+```bash
+cd ~/shadowmesh
+git pull origin main
+
+# Run full automation (interactive prompts)
+./scripts/full-deploy-and-test.sh
+```
+
+This script handles everything:
+1. Pulls latest code from GitHub
+2. Rebuilds daemon and relay binaries
+3. Deploys locally and to remote relay server
+4. Applies TCP optimizations (BBR, 16MB buffers)
+5. Restarts connections
+6. Runs automated iperf3 tests
+7. Generates performance reports
+
+**Manual Option: Step-by-Step**
+
+If you prefer manual control:
+
 **Step 1: Rebuild binaries with 2MB WebSocket buffers**
 
 ```bash
@@ -828,21 +853,30 @@ curl -X POST http://127.0.0.1:9090/connect \
   -d '{"peer_address": "PEER_IP:9001", "use_relay": true}'
 ```
 
-**Step 4: Re-run iperf3 test**
+**Step 4: Run automated performance tests**
 
 ```bash
 # Server side (10.0.0.2)
-iperf3 -s -p 5202
+./scripts/automated-perf-test.sh --server
 
 # Client side (10.0.0.1)
-iperf3 -c 10.0.0.2 -t 30 -P 4 -p 5202
+./scripts/automated-perf-test.sh --client 10.0.0.2 --duration 30 --parallel 4
 ```
+
+The automated test script will:
+- Run iperf3 with optimal settings
+- Collect system info (TCP config, WebSocket buffers)
+- Parse JSON results automatically
+- Check for WebSocket buffer errors
+- Save all results to `perf-results/` directory
+- Generate human-readable summary
 
 **Expected improvements:**
 - Throughput: 25-35 Mbps (vs 13.4 Mbps baseline)
 - Retransmissions: <500 (vs 1,797 baseline)
 - Bandwidth utilization: 60-85% (vs 33% baseline)
 - More stable throughput with less variance
+- Zero "send buffer full" errors
 
 **Verification:**
 
