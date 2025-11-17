@@ -447,13 +447,13 @@ func (dm *DaemonManager) initP2PListener() error {
 	})
 
 	// Start listening for incoming WebSocket connections
-	// Port 8545 - already forwarded, no ISP interference
-	listenAddr := ":8545"
+	// Port 9545 - clean port, no conflicts with AWS CLI
+	listenAddr := ":9545"
 	if err := dm.p2pConnection.Listen(listenAddr); err != nil {
 		return fmt.Errorf("failed to start P2P listener: %w", err)
 	}
 
-	log.Printf("✅ P2P WebSocket listener started on port 8545")
+	log.Printf("✅ P2P WebSocket listener started on port 9545")
 
 	return nil
 }
