@@ -40,6 +40,11 @@ type P2PConnection struct {
 
 	// Connection callback - called when incoming connection is accepted
 	onConnectionAccepted func()
+
+	// Relay mode
+	relayMode   bool
+	relayServer string
+	peerID      string
 }
 
 // NewP2PConnection creates a new P2P connection
@@ -285,6 +290,54 @@ func (p *P2PConnection) setConnected(connected bool) {
 // SetOnConnectionAccepted sets the callback for when incoming connection is accepted
 func (p *P2PConnection) SetOnConnectionAccepted(callback func()) {
 	p.onConnectionAccepted = callback
+}
+
+// EnableRelayMode configures the connection to use a relay server
+func (p *P2PConnection) EnableRelayMode(relayServer, peerID string) {
+	p.relayMode = true
+	p.relayServer = relayServer
+	p.peerID = peerID
+}
+
+// ConnectViaRelay establishes WebSocket connection to relay server
+func (p *P2PConnection) ConnectViaRelay() error {
+	if !p.relayMode {
+		return fmt.Errorf("relay mode not enabled")
+	}
+
+	// Build relay URL with peer ID
+	relayURL := fmt.Sprintf("%s?peer_id=%s", p.relayServer, p.peerID)
+	log.Printf("Connecting to relay server: %s", relayURL)
+
+	dialer := &websocket.Dialer{
+		HandshakeTimeout: 10 * time.Second,
+	}
+
+	// Establish WebSocket connection to relay
+	conn, resp, err := dialer.Dial(relayURL, nil)
+	if err != nil {
+		if resp != nil {
+			return fmt.Errorf("relay connection failed (status %d): %w", resp.StatusCode, err)
+		}
+		return fmt.Errorf("relay connection failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	p.connMutex.Lock()
+	p.conn = conn
+	p.peerAddr = relayURL
+	p.connMutex.Unlock()
+
+	p.setConnected(true)
+
+	log.Printf("✅ Connected to relay server as peer %s", p.peerID)
+
+	// Start send/receive goroutines
+	p.wg.Add(2)
+	go p.sendLoop()
+	go p.recvLoop()
+
+	return nil
 }
 
 // generateSelfSignedCert generates a self-signed TLS certificate

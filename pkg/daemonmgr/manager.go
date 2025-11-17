@@ -33,12 +33,18 @@ type DaemonConfig struct {
 
 	Peer struct {
 		Address string `yaml:"address"` // Peer address (set dynamically via CLI)
+		ID      string `yaml:"id"`      // Peer ID for relay mode
 	} `yaml:"peer"`
 
 	NAT struct {
 		Enabled    bool   `yaml:"enabled"`
 		STUNServer string `yaml:"stun_server"`
 	} `yaml:"nat"`
+
+	Relay struct {
+		Enabled bool   `yaml:"enabled"` // Use relay server instead of direct P2P
+		Server  string `yaml:"server"`  // Relay server URL (e.g., ws://94.237.121.21:9545/relay)
+	} `yaml:"relay"`
 }
 
 // ConnectionState represents daemon connection state
@@ -192,7 +198,7 @@ func (dm *DaemonManager) Stop() error {
 	return nil
 }
 
-// Connect establishes P2P connection to peer
+// Connect establishes P2P connection to peer (or relay server)
 func (dm *DaemonManager) Connect(peerAddr string) error {
 	dm.stateMu.Lock()
 	if dm.state == StateConnected {
@@ -202,27 +208,44 @@ func (dm *DaemonManager) Connect(peerAddr string) error {
 	dm.state = StateConnecting
 	dm.stateMu.Unlock()
 
-	log.Printf("Connecting to peer: %s", peerAddr)
-
 	// Initialize P2P connection if not already done
 	if dm.p2pConnection == nil {
 		dm.p2pConnection = NewP2PConnection()
 	}
 
-	// Establish WebSocket connection
-	if err := dm.p2pConnection.Connect(peerAddr); err != nil {
-		dm.setState(StateError, err)
-		return fmt.Errorf("connection failed: %w", err)
-	}
+	// Check if relay mode is enabled
+	if dm.config.Relay.Enabled {
+		log.Printf("Connecting via relay server: %s (peer ID: %s)", dm.config.Relay.Server, dm.config.Peer.ID)
 
-	// Update config with peer address
-	dm.config.Peer.Address = peerAddr
+		// Enable relay mode
+		dm.p2pConnection.EnableRelayMode(dm.config.Relay.Server, dm.config.Peer.ID)
+
+		// Connect to relay server
+		if err := dm.p2pConnection.ConnectViaRelay(); err != nil {
+			dm.setState(StateError, err)
+			return fmt.Errorf("relay connection failed: %w", err)
+		}
+
+		log.Printf("✅ Connected to relay server successfully")
+	} else {
+		log.Printf("Connecting to peer directly: %s", peerAddr)
+
+		// Establish direct WebSocket connection
+		if err := dm.p2pConnection.Connect(peerAddr); err != nil {
+			dm.setState(StateError, err)
+			return fmt.Errorf("connection failed: %w", err)
+		}
+
+		// Update config with peer address
+		dm.config.Peer.Address = peerAddr
+
+		log.Printf("✅ Connected to peer directly")
+	}
 
 	// Start frame router
 	dm.startFrameRouter()
 
 	dm.setState(StateConnected, nil)
-	log.Printf("✅ Connected to peer successfully")
 
 	return nil
 }
