@@ -732,4 +732,90 @@ sudo tcpdump -i ens18 port 9545 -X -c 20
 
 ---
 
+## TCP Performance Optimization
+
+### Applying TCP Optimizations (RECOMMENDED)
+
+The iperf3 test revealed TCP window scaling issues limiting throughput to 33% of available bandwidth. Apply these optimizations to improve performance by 2-3x.
+
+**Step 1: Pull latest scripts from GitHub**
+
+```bash
+cd ~/shadowmesh
+git pull origin main
+```
+
+**Step 2: Run optimization script on BOTH endpoints**
+
+```bash
+# On shadowmesh-001 (10.0.0.1)
+sudo ./scripts/optimize-tcp-performance.sh
+
+# On shadowmesh-002 (10.0.0.2)
+sudo ./scripts/optimize-tcp-performance.sh
+```
+
+**What the script does:**
+- Enables TCP BBR congestion control (better for high-latency paths)
+- Increases TCP buffers to 16MB (from ~87KB default)
+- Enables TCP window scaling
+- Optimizes TCP keepalive and timestamps
+- Makes changes persistent across reboots
+
+**Step 3: Restart ShadowMesh connections**
+
+```bash
+# Disconnect current connection
+curl -X POST http://127.0.0.1:9090/disconnect
+
+# Reconnect
+curl -X POST http://127.0.0.1:9090/connect \
+  -H "Content-Type: application/json" \
+  -d '{"peer_address": "PEER_IP:9001", "use_relay": true}'
+```
+
+**Step 4: Re-run iperf3 test**
+
+```bash
+# Server side (10.0.0.2)
+iperf3 -s -p 5202
+
+# Client side (10.0.0.1)
+iperf3 -c 10.0.0.2 -t 30 -P 4 -p 5202
+```
+
+**Expected improvements:**
+- Throughput: 25-35 Mbps (vs 13.4 Mbps baseline)
+- Retransmissions: <500 (vs 1,797 baseline)
+- Bandwidth utilization: 60-85% (vs 33% baseline)
+- More stable throughput with less variance
+
+**Verification:**
+
+```bash
+# Check BBR is enabled
+sysctl net.ipv4.tcp_congestion_control
+# Should output: net.ipv4.tcp_congestion_control = bbr
+
+# Check buffer sizes
+sysctl net.ipv4.tcp_rmem net.ipv4.tcp_wmem
+# Should show: 4096 131072 16777216
+```
+
+**Troubleshooting:**
+
+**BBR not available:**
+- Requires Linux kernel 4.9+
+- Check kernel: `uname -r`
+- Script will fall back to optimized buffers only
+
+**Permission denied:**
+- Script must run as root: `sudo ./scripts/optimize-tcp-performance.sh`
+
+**Changes not persisting after reboot:**
+- Check `/etc/sysctl.d/99-shadowmesh-tcp.conf` exists
+- Verify with: `cat /etc/sysctl.d/99-shadowmesh-tcp.conf`
+
+---
+
 **Ready to test!** Follow these steps and the P2P tunnel should work. 🚀
