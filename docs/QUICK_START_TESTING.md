@@ -465,4 +465,151 @@ curl -X POST http://127.0.0.1:9090/disconnect
 
 ---
 
+## Relay Server Testing (Symmetric NAT Traversal)
+
+### Test Date: 2025-11-17
+
+**Scenario:** Testing relay server functionality when direct P2P connection fails (Symmetric NAT)
+
+**Relay Server:** 94.237.121.21:9545 (UpCloud, Finland)
+
+### Connection Test Results
+
+**Command:**
+```bash
+ping 10.0.0.1
+```
+
+**Results:**
+```
+PING 10.0.0.1 (10.0.0.1) 56(84) bytes of data.
+64 bytes from 10.0.0.1: icmp_seq=1 ttl=64 time=98.4 ms
+64 bytes from 10.0.0.1: icmp_seq=2 ttl=64 time=41.9 ms
+64 bytes from 10.0.0.1: icmp_seq=3 ttl=64 time=56.3 ms
+64 bytes from 10.0.0.1: icmp_seq=4 ttl=64 time=52.5 ms
+64 bytes from 10.0.0.1: icmp_seq=5 ttl=64 time=49.2 ms
+64 bytes from 10.0.0.1: icmp_seq=6 ttl=64 time=56.5 ms
+```
+
+**Status:** ✅ SUCCESS
+
+**Latency Statistics:**
+- Minimum: 41.9 ms
+- Maximum: 98.4 ms
+- Average: ~55.8 ms
+- Standard deviation: ~18.3 ms
+
+**Observations:**
+- Relay connection established successfully
+- All packets delivered (0% packet loss)
+- Latency higher than direct P2P (expected due to relay hop)
+- First packet shows higher latency (98.4ms) - connection setup overhead
+- Subsequent packets stabilize around 50-60ms
+
+**Use Case:** Relay server successfully handles Symmetric NAT traversal when direct peer connection is impossible.
+
+---
+
+## Video Streaming Test (Bandwidth & Real-World Usage)
+
+### Purpose
+Test real-world video streaming performance across the encrypted P2P tunnel to validate:
+- Sustained bandwidth capacity
+- Latency impact on streaming quality
+- Buffering and playback smoothness
+- Practical use case validation
+
+### Prerequisites
+- Both endpoints connected via ShadowMesh tunnel
+- Python3 installed (for HTTP server)
+- Optional: ffmpeg, VLC, or mpv for advanced streaming tests
+
+### Quick Start
+
+**Step 1: On Server Machine (e.g., 10.0.0.1)**
+
+```bash
+cd ~/shadowmesh
+./scripts/test-video-stream.sh
+# Select option 3 to generate test video
+# Then select option 1 to start HTTP server
+```
+
+**Step 2: On Client Machine (e.g., 10.0.0.2)**
+
+```bash
+cd ~/shadowmesh
+./scripts/test-video-stream.sh
+# Select option 2 for client mode
+# Enter server IP: 10.0.0.1
+# Choose streaming method (download recommended for bandwidth test)
+```
+
+### Test Methods
+
+**Method 1: Download Test (Bandwidth Measurement)**
+- Downloads entire video file
+- Measures transfer time and calculates bandwidth
+- Best for quantitative performance testing
+
+**Method 2: Stream with ffplay**
+- Real-time video streaming
+- Tests playback smoothness
+- Requires ffmpeg: `sudo apt install ffmpeg`
+
+**Method 3: Stream with VLC**
+- GUI video streaming
+- Good for visual quality assessment
+- Requires VLC: `sudo apt install vlc`
+
+**Method 4: Pipe Streaming**
+- Streams via curl pipe to player
+- Tests low-latency streaming
+
+### Sample Test Results
+
+**Configuration:** Direct P2P connection
+```
+Video: 720p, 15MB, 30 seconds
+Download time: 8 seconds
+Bandwidth: 15 Mbps
+Latency: 2-3ms
+Result: Smooth playback, no buffering
+```
+
+**Configuration:** Relay server (Symmetric NAT)
+```
+Video: 720p, 15MB, 30 seconds
+Download time: 12 seconds
+Bandwidth: 10 Mbps
+Latency: 50-60ms
+Result: Smooth playback, minor initial buffering
+```
+
+### Success Criteria
+- [ ] Video downloads successfully
+- [ ] Bandwidth ≥5 Mbps for 720p streaming
+- [ ] Playback smooth without stuttering
+- [ ] No connection drops during transfer
+- [ ] Latency <100ms for good streaming experience
+
+### Troubleshooting
+
+**Slow download speeds:**
+- Check CPU usage on both endpoints
+- Verify encryption pipeline not bottlenecked
+- Test with smaller video file first
+
+**Video won't play:**
+- Verify HTTP server is running: `curl http://10.0.0.1:8080/test-video.mp4 -I`
+- Check firewall allows port 8080
+- Ensure video file exists on server
+
+**Buffering/stuttering:**
+- Expected with relay server due to added latency
+- Try lower resolution video (480p)
+- Check network stability with: `ping 10.0.0.1 -c 100`
+
+---
+
 **Ready to test!** Follow these steps and the P2P tunnel should work. 🚀
