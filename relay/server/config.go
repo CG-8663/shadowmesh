@@ -81,8 +81,8 @@ func DefaultConfig() *Config {
 			HeartbeatInterval: 30,
 			HeartbeatTimeout:  90,
 			MaxFrameSize:      65536,
-			ReadBufferSize:    4096,
-			WriteBufferSize:   4096,
+			ReadBufferSize:    2 * 1024 * 1024, // 2MB (increased from 4KB for burst traffic)
+			WriteBufferSize:   2 * 1024 * 1024, // 2MB (prevents buffer full errors)
 		},
 		Logging: LoggingConfig{
 			Level:      "info",

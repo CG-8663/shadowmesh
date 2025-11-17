@@ -37,8 +37,8 @@ func NewRelayServer(port int) *RelayServer {
 	return &RelayServer{
 		peers: make(map[string]*PeerConnection),
 		upgrader: websocket.Upgrader{
-			ReadBufferSize:  4096,
-			WriteBufferSize: 4096,
+			ReadBufferSize:  2 * 1024 * 1024, // 2MB (increased from 4KB for burst traffic)
+			WriteBufferSize: 2 * 1024 * 1024, // 2MB (prevents buffer full errors)
 			CheckOrigin: func(r *http.Request) bool {
 				return true // Accept all origins for now
 			},

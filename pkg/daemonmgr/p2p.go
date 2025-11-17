@@ -240,8 +240,8 @@ func (p *P2PConnection) recvLoop() {
 // handleWebSocket handles incoming WebSocket connections
 func (p *P2PConnection) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{
-		ReadBufferSize:  4096,
-		WriteBufferSize: 4096,
+		ReadBufferSize:  2 * 1024 * 1024, // 2MB (increased from 4KB for iperf3 burst traffic)
+		WriteBufferSize: 2 * 1024 * 1024, // 2MB (prevents "send buffer full" errors)
 		CheckOrigin: func(r *http.Request) bool {
 			return true // Accept all origins (TODO: proper validation)
 		},
