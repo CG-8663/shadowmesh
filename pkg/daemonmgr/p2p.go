@@ -47,8 +47,8 @@ func NewP2PConnection() *P2PConnection {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	return &P2PConnection{
-		sendChan: make(chan []byte, 100),
-		recvChan: make(chan []byte, 100),
+		sendChan: make(chan []byte, 1000), // Increased from 100 to handle bursts
+		recvChan: make(chan []byte, 1000), // Increased from 100 to handle bursts
 		ctx:      ctx,
 		cancel:   cancel,
 	}
