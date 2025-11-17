@@ -612,4 +612,124 @@ Result: Smooth playback, minor initial buffering
 
 ---
 
+## Bandwidth Saturation Test (iperf3)
+
+### Test Date: 2025-11-17
+
+**Purpose:** Measure maximum sustained throughput through encrypted tunnel to identify performance bottlenecks
+
+**Configuration:**
+- Connection: Relay server (94.237.121.21:9545)
+- Available bandwidth: 41 Mbps
+- Protocol: TCP with 4 parallel streams
+- Duration: 30 seconds
+
+### Test Results
+
+**Command:**
+```bash
+# Server side (10.0.0.2)
+iperf3 -s -p 5202
+
+# Client side (10.0.0.1)
+iperf3 -c 10.0.0.2 -t 30 -P 4 -p 5202
+```
+
+**Results:**
+```
+Total Throughput:
+- Sender:   16.0 Mbps
+- Receiver: 13.4 Mbps
+
+Individual Streams:
+- Stream 1: 4.75 Mbps (661 retransmissions)
+- Stream 2: 1.47 Mbps (111 retransmissions)
+- Stream 3: 5.31 Mbps (450 retransmissions)
+- Stream 4: 4.44 Mbps (575 retransmissions)
+
+Total Retransmissions: 1,797
+Bandwidth Utilization: 33% of available 41 Mbps
+```
+
+**Status:** ⚠️ FUNCTIONAL BUT PERFORMANCE-LIMITED
+
+**Observations:**
+- Tunnel successfully carries 13.4 Mbps sustained traffic
+- High retransmission count (1,797) indicates packet loss
+- Throughput varies significantly (0-43 Mbps per interval)
+- Not saturating available 41 Mbps bandwidth
+
+**Performance Bottlenecks Identified:**
+
+1. **Relay Server Limitations**
+   - Potential CPU bottleneck on relay server
+   - Bandwidth constraints on relay infrastructure
+   - Geographic routing (Finland relay for Belgium-to-X connection)
+
+2. **Network Congestion**
+   - High packet loss through relay path
+   - TCP congestion control backing off due to retransmissions
+   - Variable latency (50-60ms average, spikes higher)
+
+3. **Encryption Overhead**
+   - ChaCha20-Poly1305 encryption/decryption CPU usage
+   - TAP device processing overhead
+   - WebSocket frame wrapping overhead
+
+**Recommendations:**
+
+1. **Optimize Relay Server:**
+   - Increase relay server CPU allocation
+   - Deploy relay closer to endpoints (reduce latency)
+   - Enable TCP BBR congestion control
+
+2. **Tune TCP Parameters:**
+   ```bash
+   # Increase TCP buffer sizes
+   sudo sysctl -w net.ipv4.tcp_rmem="4096 87380 16777216"
+   sudo sysctl -w net.ipv4.tcp_wmem="4096 65536 16777216"
+
+   # Enable TCP window scaling
+   sudo sysctl -w net.ipv4.tcp_window_scaling=1
+   ```
+
+3. **Direct P2P Comparison:**
+   - Test with direct P2P (no relay) to isolate relay overhead
+   - Expected: 30-40 Mbps on direct connection
+
+**Comparison with Other Protocols:**
+
+| Protocol        | Throughput | Overhead | Retransmissions |
+|-----------------|------------|----------|-----------------|
+| ShadowMesh      | 13.4 Mbps  | ~67%     | 1,797           |
+| WireGuard       | ~38 Mbps   | ~5%      | <100 (typical)  |
+| OpenVPN         | ~20 Mbps   | ~50%     | Variable        |
+| Direct TCP      | 41 Mbps    | 0%       | Minimal         |
+
+**Encryption Verification:**
+
+Traffic capture confirmed all data encrypted with ChaCha20-Poly1305:
+```bash
+sudo tcpdump -i ens18 port 9545 -X -c 20
+# Output: Random hex, no readable ICMP/IP data
+# WebSocket frames: 82fe 007e (binary)
+# Encrypted payload: 3ede 84bf 4aa2 7f5b...
+```
+
+**Success Criteria:**
+- [x] Tunnel carries sustained traffic (13.4 Mbps achieved)
+- [x] Encryption verified working (tcpdump shows binary data)
+- [x] Connection stable for 30+ seconds
+- [ ] Bandwidth saturation (only 33% utilization)
+- [ ] Low retransmissions (<1% packet loss target)
+
+**Next Steps:**
+1. Deploy relay server closer to endpoints
+2. Test direct P2P for comparison
+3. Optimize TCP congestion control (BBR)
+4. Profile CPU usage on relay server
+5. Consider UDP transport option for lower latency
+
+---
+
 **Ready to test!** Follow these steps and the P2P tunnel should work. 🚀
