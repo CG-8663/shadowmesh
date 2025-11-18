@@ -305,8 +305,8 @@ func (p *P2PConnection) ConnectViaRelay() error {
 		return fmt.Errorf("relay mode not enabled")
 	}
 
-	// Build relay URL with peer ID
-	relayURL := fmt.Sprintf("%s?peer_id=%s", p.relayServer, p.peerID)
+	// Build relay URL with /relay path and peer ID
+	relayURL := fmt.Sprintf("%s/relay?peer_id=%s", p.relayServer, p.peerID)
 	log.Printf("Connecting to relay server: %s", relayURL)
 
 	dialer := &websocket.Dialer{
