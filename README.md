@@ -216,7 +216,6 @@ Pre-commit hooks run automatically on `git commit`:
 
 ## Documentation
 
-- **[docs/QUICK_START_TESTING.md](docs/QUICK_START_TESTING.md)** - Complete performance testing guide with optimization results
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and release notes
 
 ---
