@@ -23,7 +23,7 @@ type TransportMode int
 
 const (
 	TransportWebSocket TransportMode = iota // WebSocket transport (relay mode)
-	TransportUDP                             // UDP transport (direct P2P)
+	TransportUDP                            // UDP transport (direct P2P)
 )
 
 // P2PConnection manages a single P2P connection (UDP or WebSocket)
