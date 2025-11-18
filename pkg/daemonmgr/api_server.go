@@ -59,7 +59,10 @@ func (api *DaemonAPI) Stop() error {
 
 // ConnectRequest represents a connect request from CLI
 type ConnectRequest struct {
-	PeerAddress string `json:"peer_address"` // e.g., "192.168.1.100:9001"
+	PeerAddress  string `json:"peer_address"`  // e.g., "192.168.1.100:9001"
+	UseRelay     bool   `json:"use_relay"`     // true to use relay server
+	RelayServer  string `json:"relay_server"`  // e.g., "94.237.121.21:9545" (optional, uses default if empty)
+	PeerID       string `json:"peer_id"`       // peer ID for relay mode (optional, auto-generated if empty)
 }
 
 // ConnectResponse represents the response to a connect request
@@ -103,10 +106,38 @@ func (api *DaemonAPI) handleConnect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if relay mode is enabled
-	if api.manager.config.Relay.Enabled {
-		// In relay mode, peer_address is not required
-		log.Printf("Connecting via relay server (peer ID: %s)", api.manager.config.Peer.ID)
+	// Check if relay mode is requested (via API or config)
+	useRelay := req.UseRelay || api.manager.config.Relay.Enabled
+
+	if useRelay {
+		// Relay mode
+		relayServer := req.RelayServer
+		if relayServer == "" {
+			relayServer = api.manager.config.Relay.Server
+		}
+		if relayServer == "" {
+			api.sendJSON(w, http.StatusBadRequest, ConnectResponse{
+				Status:  "error",
+				Message: "relay_server is required when use_relay is true",
+			})
+			return
+		}
+
+		peerID := req.PeerID
+		if peerID == "" {
+			peerID = api.manager.config.Peer.ID
+		}
+		if peerID == "" {
+			// Generate random peer ID
+			peerID = fmt.Sprintf("peer-%d", time.Now().UnixNano())
+		}
+
+		log.Printf("Connecting via relay server: %s (peer ID: %s)", relayServer, peerID)
+
+		// Temporarily set config for relay connection
+		api.manager.config.Relay.Enabled = true
+		api.manager.config.Relay.Server = relayServer
+		api.manager.config.Peer.ID = peerID
 
 		// Connect to relay server
 		if err := api.manager.Connect(""); err != nil {
@@ -119,7 +150,7 @@ func (api *DaemonAPI) handleConnect(w http.ResponseWriter, r *http.Request) {
 
 		api.sendJSON(w, http.StatusOK, ConnectResponse{
 			Status:  "success",
-			Message: fmt.Sprintf("Connected to relay server as peer %s", api.manager.config.Peer.ID),
+			Message: fmt.Sprintf("Connected to relay server %s as peer %s", relayServer, peerID),
 		})
 		return
 	}
@@ -128,7 +159,7 @@ func (api *DaemonAPI) handleConnect(w http.ResponseWriter, r *http.Request) {
 	if req.PeerAddress == "" {
 		api.sendJSON(w, http.StatusBadRequest, ConnectResponse{
 			Status:  "error",
-			Message: "peer_address is required (or enable relay mode in config)",
+			Message: "peer_address is required for direct P2P mode",
 		})
 		return
 	}
