@@ -68,6 +68,26 @@ temp/
 client/
 # Allow cmd/shadowmesh-daemon/ for Story 2-8
 # cmd/
+# Ignore experimental/old cmd directories
+cmd/lightnode-l2/
+cmd/lightnode-l2-v10/
+cmd/lightnode-l3-v11/
+cmd/lightnode-l3-v19/
+cmd/lightnode/
+cmd/demo-p2p/
+cmd/test-direct-p2p/
+cmd/test-production-p2p/
+cmd/integration-test/
+cmd/discovery/
+# Ignore experimental pkg directories
+pkg/api/
+pkg/authentication/
+pkg/discovery/
+pkg/layer3/
+pkg/logging/
+pkg/p2p/
+pkg/persistence/
+pkg/transport/
 # Allow pkg/daemonmgr/ and pkg/layer2/ for Story 2-8
 # pkg/
 shared/
