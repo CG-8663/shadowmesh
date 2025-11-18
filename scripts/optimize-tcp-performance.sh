@@ -21,6 +21,13 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+# Check available disk space (warn if < 100MB free on /)
+ROOT_AVAIL=$(df / | tail -1 | awk '{print $4}')
+if [ "$ROOT_AVAIL" -lt 102400 ]; then
+    print_warning "Low disk space: $(df -h / | tail -1 | awk '{print $4}') available"
+    print_warning "Consider cleaning up /tmp or /var/log if issues occur"
+fi
+
 print_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -86,10 +93,8 @@ fi
 
 print_info "Step 3: Applying TCP optimizations..."
 
-# Backup current sysctl settings
-print_info "Backing up current sysctl settings..."
-sysctl -a | grep -E "net.ipv4.tcp|net.core" > /tmp/sysctl_backup_$(date +%Y%m%d_%H%M%S).txt
-print_success "Backup saved to /tmp/sysctl_backup_*.txt"
+# Note: Skipping sysctl backup to avoid /tmp space issues on Raspberry Pi
+# Current settings already displayed in Step 1 above
 
 # Apply optimizations
 echo ""

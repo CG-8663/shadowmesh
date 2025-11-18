@@ -106,12 +106,12 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     else
         print_info "Deploying relay server to ${RELAY_HOST}..."
 
-        # Upload binary
-        scp bin/relay-server-linux "${RELAY_HOST}:/tmp/relay-server"
+        # Upload binary to home directory (avoid /tmp space issues)
+        scp bin/relay-server-linux "${RELAY_HOST}:~/relay-server"
 
         # Install and restart
         ssh "${RELAY_HOST}" << 'ENDSSH'
-sudo mv /tmp/relay-server /usr/local/bin/relay-server
+sudo mv ~/relay-server /usr/local/bin/relay-server
 sudo chmod +x /usr/local/bin/relay-server
 echo "Checking for running relay server..."
 if pgrep -x "relay-server" > /dev/null; then

@@ -133,14 +133,14 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     else
         print_info "Deploying to ${RELAY_HOST}..."
 
-        # Upload binary
+        # Upload binary to home directory (avoid /tmp space issues)
         print_info "Uploading binary..."
-        scp bin/relay-server-linux "${RELAY_HOST}:/tmp/relay-server"
+        scp bin/relay-server-linux "${RELAY_HOST}:~/relay-server"
 
         # Install and restart
         print_info "Installing and restarting relay server..."
         ssh "${RELAY_HOST}" << 'ENDSSH'
-sudo mv /tmp/relay-server /usr/local/bin/relay-server
+sudo mv ~/relay-server /usr/local/bin/relay-server
 sudo chmod +x /usr/local/bin/relay-server
 
 echo "Stopping existing relay server..."
