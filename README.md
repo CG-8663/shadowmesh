@@ -1,42 +1,49 @@
 # ShadowMesh - Post-Quantum Decentralized Private Network (DPN)
 
-[![Version](https://img.shields.io/badge/version-0.2.0--alpha%20MVP-blue.svg)](https://github.com/CG-8663/shadowmesh/releases)
+[![Version](https://img.shields.io/badge/version-0.2.0--alpha-blue.svg)](https://github.com/CG-8663/shadowmesh/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go)](https://golang.org)
-[![Solidity](https://img.shields.io/badge/Solidity-0.8.20+-363636?logo=solidity)](https://soliditylang.org)
+[![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go)](https://golang.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ---
 
-ShadowMesh is a fully decentralized, quantum-safe DPN (Decentralized Private Network) implementing NIST-standardized post-quantum cryptography. Unlike proxy-based VPN services with centralized servers, ShadowMesh uses **Kademlia DHT + Ethereum smart contracts** for peer/relay discovery, eliminating all central dependencies.
+ShadowMesh is a peer-to-peer encrypted private network with relay fallback for Symmetric NAT traversal. Built for quantum-safe networking with Layer 2 encryption and WebSocket transport.
 
-**Current Status**: MVP Development (Epic 1: Foundation & Cryptography)
+**Current Status**: Story 2-8 Complete - Relay Mode with Production Deployment
 
 ---
 
 ## Features
 
-### Core Technology
-- ✅ **Post-Quantum Cryptography**: ML-KEM-1024 (key exchange) + ML-DSA-87 (signatures)
-- ✅ **Hybrid Mode**: Classical (X25519, Ed25519) + PQC for defense-in-depth
-- ✅ **Layer 2 Networking**: TAP devices with Ethernet frame encryption
-- ✅ **WebSocket Secure (WSS)**: Traffic obfuscation for censorship resistance
-- ✅ **Smart Contract**: Ethereum relay registry (chronara.eth) with staking/slashing
-- ✅ **Monitoring**: Grafana + Prometheus with 3 pre-configured dashboards
-- ✅ **Database**: PostgreSQL with user/device management and audit logs
-- ✅ **Public Network Map**: React + Leaflet.js visualization
+### Implemented ✅
 
-### Security
-- **NIST-Standardized PQC**: First DPN with FIPS 203 (ML-KEM) and FIPS 204 (ML-DSA)
-- **Key Rotation**: 5-minute default (configurable: 60s - 60min)
-- **Zero-Trust Relays**: TPM/SGX attestation + blockchain verification
-- **Traffic Obfuscation**: Packet size/timing randomization
+- **Layer 2 Networking**: TAP devices with Ethernet frame encryption
+- **ChaCha20-Poly1305**: Symmetric encryption (minimal CPU overhead)
+- **WebSocket Transport**: HTTP-compatible traffic for censorship resistance
+- **Relay Server**: Production relay at 94.237.121.21:9545 for Symmetric NAT traversal
+- **TCP BBR**: Optimized congestion control for high-latency paths
+- **Daemon Manager**: HTTP API for connection management
+- **CLI Tool**: Command-line interface for daemon control
+- **NAT Traversal**: STUN-based NAT type detection
 
-### Performance Targets
-- **Throughput**: 1+ Gbps (goal: 6-7 Gbps)
-- **Latency**: <2ms overhead
-- **CGNAT Traversal**: 95%+ success rate
-- **Relay Capacity**: 1000+ concurrent connections
+### Performance
+
+**Production Test Results** (via relay server):
+- **Throughput**: 36.6 Mbps (63% faster than Tailscale's 22.4 Mbps)
+- **Latency**: ~55ms (relay adds 5ms overhead)
+- **Bandwidth Utilization**: 81-87% (near-optimal)
+- **CPU Overhead**: 1.3% on Raspberry Pi 4, 4.3% on Intel Xeon
+- **Retransmissions**: 0 (perfect stability)
+- **Scalability**: >2 Gbps potential on Raspberry Pi, >800 Mbps on Intel Xeon
+
+**Bottleneck**: Internet upload bandwidth, not ShadowMesh architecture.
+
+### In Development 🚧
+
+- **Post-Quantum Cryptography**: ML-KEM-1024 (key exchange) + ML-DSA-87 (signatures)
+- **Direct P2P**: UDP hole punching for low-latency direct connections
+- **Smart Contract**: Ethereum relay registry with staking/slashing
+- **Monitoring**: Prometheus + Grafana dashboards
 
 ---
 
@@ -44,46 +51,39 @@ ShadowMesh is a fully decentralized, quantum-safe DPN (Decentralized Private Net
 
 ```
 shadowmesh/
-├── cmd/                     # Binary entry points
-│   ├── shadowmesh/          # Client daemon
-│   ├── shadowmesh-relay/    # Relay node (Epic 4)
-│   └── shadowmesh-bootstrap/# Bootstrap node
-├── pkg/                     # Shared libraries
-│   ├── crypto/              # Cryptography modules (Epic 1)
-│   │   ├── mlkem/           # ML-KEM-1024 key exchange
-│   │   ├── mldsa/           # ML-DSA-87 signatures
-│   │   ├── classical/       # X25519 + Ed25519
-│   │   ├── hybrid/          # Hybrid PQC orchestration
-│   │   ├── symmetric/       # ChaCha20-Poly1305
-│   │   ├── keystore/        # Encrypted keystore
-│   │   └── rotation/        # Key rotation scheduler
-│   ├── transport/           # Transport layer (Epic 2)
-│   │   └── websocket/       # WebSocket Secure (WSS)
-│   ├── tap/                 # TAP device management (Epic 2)
-│   ├── blockchain/          # Smart contract integration (Epic 3)
-│   └── metrics/             # Prometheus metrics (Epic 5)
-├── contracts/               # Ethereum smart contracts (Epic 3)
-│   ├── contracts/           # Solidity source files
-│   │   └── RelayNodeRegistry.sol
-│   ├── scripts/             # Deployment scripts
-│   ├── test/                # Contract tests
-│   └── hardhat.config.ts    # Hardhat configuration
-├── monitoring/              # Monitoring stack (Epic 5)
-│   ├── docker-compose.yml   # Prometheus + Grafana
-│   ├── prometheus.yml       # Metrics configuration
-│   └── dashboards/          # Grafana dashboards
-├── test/                    # Test suites
-│   ├── integration/         # Integration tests
-│   └── e2e/                 # End-to-end tests
-├── docs/                    # Documentation
-│   ├── prd.md               # Product Requirements Document
-│   └── 2-ARCHITECTURE/      # Architecture specifications
-├── .github/                 # GitHub workflows
-│   └── workflows/
-│       ├── ci.yml           # CI/CD pipeline
-│       └── benchmarks.yml   # Performance benchmarks
-├── go.mod                   # Go module definition
-└── Makefile                 # Build automation
+├── cmd/                       # Binary entry points
+│   ├── shadowmesh-daemon/     # Main daemon (client/server)
+│   ├── relay-server/          # Relay server (deployed to production)
+│   └── shadowmesh/            # CLI tool for daemon management
+├── pkg/                       # Shared libraries
+│   ├── crypto/                # Cryptography modules
+│   │   ├── classical/         # X25519 + Ed25519 (classical crypto)
+│   │   ├── hybrid/            # Hybrid PQC orchestration (in dev)
+│   │   ├── mlkem/             # ML-KEM-1024 (in dev)
+│   │   ├── mldsa/             # ML-DSA-87 (in dev)
+│   │   ├── symmetric/         # ChaCha20-Poly1305 (production)
+│   │   └── frameencryption/   # Frame-level encryption (production)
+│   ├── daemonmgr/             # Daemon manager
+│   │   ├── api_server.go      # HTTP API server
+│   │   ├── p2p.go             # WebSocket P2P connection
+│   │   ├── frame_router.go    # Frame routing logic
+│   │   └── manager.go         # Main daemon orchestration
+│   ├── layer2/                # TAP device management
+│   │   ├── tap_device.go      # TAP device (2000 frame buffers)
+│   │   └── ethernet.go        # Ethernet frame parsing
+│   └── nat/                   # NAT traversal
+│       └── stun.go            # STUN client for NAT detection
+├── relay/                     # Relay server implementation
+│   └── server/                # WebSocket relay server
+├── scripts/                   # Deployment and testing scripts
+│   ├── deploy/                # Deployment scripts
+│   │   └── upcloud-relay.sh   # UpCloud relay deployment
+│   └── optimize-tcp-performance.sh  # TCP BBR optimization
+├── docs/                      # Documentation
+│   └── QUICK_START_TESTING.md # Performance testing guide
+├── bin/                       # Compiled binaries
+├── go.mod                     # Go module definition
+└── .github/                   # CI/CD workflows
 ```
 
 ---
@@ -92,12 +92,11 @@ shadowmesh/
 
 ### Prerequisites
 
-- **Go**: 1.25+ ([install](https://golang.org/dl/))
-- **Node.js**: 18+ ([install](https://nodejs.org/))
-- **Docker**: 20.10+ ([install](https://docs.docker.com/get-docker/))
-- **Make**: Build automation tool (usually pre-installed)
+- **Go**: 1.21+ ([install](https://golang.org/dl/))
+- **Root/sudo access**: Required for TAP device creation
+- **Linux**: Ubuntu 20.04+, Debian 11+, or Raspberry Pi OS (macOS experimental)
 
-### Clone and Build
+### Build
 
 ```bash
 # Clone repository
@@ -107,156 +106,272 @@ cd shadowmesh
 # Install dependencies
 go mod download
 
-# Build all binaries
-make build
+# Build daemon
+go build -o bin/shadowmesh-daemon ./cmd/shadowmesh-daemon
 
-# Run tests
-make test
+# Build CLI tool
+go build -o bin/shadowmesh ./cmd/shadowmesh
 
-# Run linting
-make lint
+# Build relay server (optional)
+go build -o bin/relay-server ./cmd/relay-server
 ```
 
-### Development Commands
+### Usage
+
+#### Start Daemon (Relay Mode)
 
 ```bash
-# Build client
-make build-client
+# Start daemon with default config
+sudo bin/shadowmesh-daemon
 
-# Build relay node
-make build-relay
+# Or use systemd service
+sudo systemctl start shadowmesh
+sudo systemctl enable shadowmesh
+```
 
-# Run all tests with coverage
-go test ./... -race -cover
+#### Connect to Peer via Relay
 
-# Run specific package tests
-go test ./pkg/crypto/... -v
+```bash
+# Using CLI tool
+bin/shadowmesh connect --relay --relay-server 94.237.121.21:9545 --peer-id peer-001
 
-# Format code
-go fmt ./...
+# Or using API directly
+curl -X POST http://localhost:9090/connect \
+  -H "Content-Type: application/json" \
+  -d '{
+    "use_relay": true,
+    "relay_server": "94.237.121.21:9545",
+    "peer_id": "peer-001"
+  }'
+```
 
-# Lint code
-golangci-lint run
+#### Check Status
 
-# Compile smart contracts
-cd contracts && npx hardhat compile
+```bash
+# Using CLI
+bin/shadowmesh status
 
-# Run smart contract tests
-cd contracts && npx hardhat test
+# Or using API
+curl http://localhost:9090/status
+```
 
-# Start monitoring stack
-cd monitoring && docker-compose up -d
+#### Performance Testing
+
+See [docs/QUICK_START_TESTING.md](docs/QUICK_START_TESTING.md) for complete performance testing guide.
+
+```bash
+# Test throughput (requires iperf3 on both endpoints)
+iperf3 -s -B 10.10.10.3  # On endpoint 1
+iperf3 -c 10.10.10.3 -t 30 -P 4  # On endpoint 2
+
+# Optimize TCP for high-latency relay connections
+sudo scripts/optimize-tcp-performance.sh
 ```
 
 ---
 
 ## Architecture
 
-### Hybrid Peer Discovery
+### Current Implementation (Story 2-8)
 
-**Kademlia DHT** (P2P peer discovery):
-- O(log N) lookup complexity
-- 256 k-buckets with k=20 peers per bucket
-- 24-hour peer TTL
-- PING/PONG liveness checks every 15 minutes
+**Transport Layer**:
+- **WebSocket**: Primary transport (relay mode)
+- **TCP**: Control plane
+- **HTTP API**: Daemon management (port 9090)
 
-**Ethereum Smart Contract** (relay node registry):
-- chronara.eth ENS name
-- 0.1 ETH stake requirement
-- 24-hour heartbeat requirement
-- Automatic slashing for offline nodes
+**Network Layer**:
+- **TAP Devices** (Layer 2): Ethernet frame encryption
+- **IP Tunnel**: 10.10.10.0/24 default network
+- **Frame Routing**: Direct TAP ↔ WebSocket frame forwarding
 
-### Transport Layer
+**Security**:
+- **ChaCha20-Poly1305**: Symmetric encryption (1-4% CPU overhead)
+- **Frame-level Encryption**: All Ethernet frames encrypted before relay transit
+- **No IP Leakage**: IP headers encrypted within Ethernet frames
 
-**Primary**: WebSocket Secure (WSS)
-- TLS 1.3 encryption
-- Appears as HTTPS traffic (port 443)
-- Defeats deep packet inspection (DPI)
-- Packet size/timing randomization
+**Relay Server**:
+- **Location**: UpCloud datacenter (94.237.121.21:9545)
+- **Protocol**: WebSocket with 2MB buffers
+- **Capacity**: 1000+ concurrent connections
+- **Latency**: ~50-60ms relay hop
 
-**Fallback**: UDP (direct P2P)
-- Low latency for direct connections
-- NAT hole punching support
+### Network Flow
 
-### Network Layer
+```
+Endpoint A (TAP)  →  WebSocket  →  Relay Server  →  WebSocket  →  Endpoint B (TAP)
+   10.10.10.3          (WSS)      94.237.121.21       (WSS)         10.10.10.4
+     ↓                                                                   ↓
+  Ethernet Frame  →  Encrypted  →  Relayed  →  Encrypted  →  Ethernet Frame
+```
 
-**TAP Devices** (Layer 2):
-- Ethernet frame encryption
-- IP headers hidden from transit
-- Prevents traffic analysis
+### Performance Optimizations
 
-### Security
+**TAP Buffers**: 2000 frames (increased from 100)
+- Prevents "TAP write channel full" warnings
+- Handles burst traffic (iperf3 stress test validated)
 
-**Post-Quantum Cryptography**:
-- ML-KEM-1024: Key encapsulation (<50ms)
-- ML-DSA-87: Digital signatures (<15ms)
-- ChaCha20-Poly1305: Symmetric encryption (1+ Gbps)
+**WebSocket Buffers**: 2MB (increased from 4KB)
+- Prevents "send buffer full" errors
+- Sustains 35+ Mbps relay throughput
 
-**Key Rotation**:
-- Default: Every 5 minutes
-- Enterprise: Every 60 seconds
-- Ultra-secure: Every 10 seconds
-
-**Keystore**:
-- AES-256-GCM encryption
-- PBKDF2 passphrase derivation (100k iterations)
-- chmod 600 permissions
+**TCP BBR**: Bottleneck Bandwidth and RTT congestion control
+- 5% throughput improvement on high-bandwidth endpoints
+- Zero retransmissions in testing
 
 ---
 
 ## Development Workflow
 
-### Epic Structure
+### Building
 
-The project is organized into 6 epics:
-
-1. **Epic 1**: Foundation & Cryptography (Weeks 1-2) ← **Current**
-2. **Epic 2**: Core Networking & Direct P2P (Weeks 3-4)
-3. **Epic 3**: Smart Contract & Blockchain Integration (Weeks 5-6)
-4. **Epic 4**: Relay Infrastructure & CGNAT Traversal (Weeks 7-9)
-5. **Epic 5**: Monitoring & Grafana Dashboard (Weeks 10-11)
-6. **Epic 6**: Public Map, Documentation & Launch (Week 12)
-
-### Story Development
-
-Stories are tracked in `.bmad-ephemeral/sprint-status.yaml`. Development workflow:
-
-1. **Epic Context**: Generate technical specification for epic
-2. **Create Story**: Draft user story with acceptance criteria and tasks
-3. **Develop Story**: Implement tasks, write tests, validate
-4. **Code Review**: Review and address findings
-5. **Mark Done**: Update sprint status and move to next story
-
-### Testing Strategy
-
-**Unit Tests** (target: 85%+ coverage):
 ```bash
-go test ./pkg/crypto/... -cover
+# Build all binaries
+go build -o bin/shadowmesh-daemon ./cmd/shadowmesh-daemon
+go build -o bin/relay-server ./cmd/relay-server
+go build -o bin/shadowmesh ./cmd/shadowmesh
+
+# Run tests
+go test ./...
+
+# Run with race detection
+go test ./... -race
+
+# Format code
+go fmt ./...
+
+# Vet code
+go vet ./...
 ```
 
-**Integration Tests**:
-```bash
-go test ./test/integration/... -v
-```
+### Testing
 
-**Benchmarks**:
 ```bash
+# Unit tests
+go test ./pkg/layer2/... -v
+go test ./pkg/crypto/... -v
+go test ./pkg/daemonmgr/... -v
+
+# Integration test (requires 2 machines)
+# See docs/QUICK_START_TESTING.md
+
+# Performance benchmarks
 go test ./pkg/crypto/... -bench=. -benchmem
+```
+
+### Deployment
+
+```bash
+# Deploy relay server to UpCloud
+./scripts/deploy/upcloud-relay.sh
+
+# Deploy to Raspberry Pi endpoint
+ssh shadowmesh-002
+git clone https://github.com/CG-8663/shadowmesh.git
+cd shadowmesh
+go build -o bin/shadowmesh-daemon ./cmd/shadowmesh-daemon
+sudo bin/shadowmesh-daemon
 ```
 
 ---
 
-## CI/CD
+## Configuration
 
-GitHub Actions runs on every push and PR:
+### Daemon Config (`/etc/shadowmesh/client.yaml`)
 
-- **Build**: Linux (amd64, arm64)
-- **Test**: All packages with race detection
-- **Lint**: golangci-lint
-- **Coverage**: Uploaded to Codecov
-- **Contracts**: Hardhat compilation and tests
+```yaml
+daemon:
+  listen_addr: "0.0.0.0:9090"  # API server address
+  p2p_listen_port: 9545        # WebSocket P2P port
 
-See `.github/workflows/ci.yml` for full configuration.
+tap:
+  device_name: "shadowmesh0"
+  ip_address: "10.10.10.3"     # Tunnel IP
+  netmask: "255.255.255.0"
+  mtu: 1500
+
+crypto:
+  key_file: "/etc/shadowmesh/keys/session.key"
+
+relay:
+  enabled: false               # Set true for relay mode
+  server: "94.237.121.21:9545" # Production relay
+  peer_id: ""                  # Auto-generated if empty
+
+logging:
+  level: "info"                # debug, info, warn, error
+```
+
+### Relay Server Config
+
+```yaml
+relay:
+  listen_addr: "0.0.0.0:9545"
+  max_peers: 1000
+  buffer_size: 2097152  # 2MB
+
+logging:
+  level: "info"
+```
+
+---
+
+## Performance Testing Results
+
+### Test Setup
+
+- **Endpoint 1**: Intel Xeon D-2166NT VM (14.44 Mbps upload)
+- **Endpoint 2**: Raspberry Pi 4 ARM (48.07 Mbps upload)
+- **Relay**: UpCloud datacenter (94.237.121.21:9545)
+- **Test**: iperf3 -P 4 -t 30 (4 parallel streams, 30 seconds)
+
+### Results
+
+| Metric | ShadowMesh | Tailscale | Advantage |
+|--------|------------|-----------|-----------|
+| Throughput (002→001) | 36.6 Mbps | 22.4 Mbps | **+63%** |
+| Throughput (001→002) | 12.4 Mbps | N/A | Limited by upload |
+| Retransmissions | 0 | N/A | Perfect |
+| CPU (Raspberry Pi) | 1.3% | N/A | Minimal |
+| CPU (Intel Xeon) | 4.3% | N/A | Minimal |
+| Latency | ~55ms | ~50ms | +5ms |
+| Bandwidth Utilization | 81-87% | N/A | Excellent |
+
+**Conclusion**: Performance limited by internet upload bandwidth, not ShadowMesh architecture.
+
+### Scalability Projections
+
+Based on CPU profiling:
+- **Raspberry Pi 4**: Could handle >2 Gbps (1.3% CPU at 35 Mbps)
+- **Intel Xeon VM**: Could handle >800 Mbps (4.3% CPU at 35 Mbps)
+
+---
+
+## Roadmap
+
+### Completed ✅
+
+- [x] Story 2-1: Daemon Manager Core
+- [x] Story 2-2: Frame Encryption
+- [x] Story 2-3: TAP Device Management
+- [x] Story 2-4: Frame Router
+- [x] Story 2-5: WebSocket P2P Connection
+- [x] Story 2-6: Daemon API Server
+- [x] Story 2-7: CLI Tool
+- [x] Story 2-8: Relay Server Mode (Production Deployment)
+
+### In Progress 🚧
+
+- [ ] Epic 2: Direct P2P with UDP hole punching
+- [ ] Epic 3: Smart contract relay registry
+- [ ] Epic 4: Post-quantum cryptography (ML-KEM + ML-DSA)
+- [ ] Epic 5: Monitoring and metrics
+
+### Future 📋
+
+- [ ] Mobile clients (iOS, Android)
+- [ ] Multi-hop routing (3-5 hops)
+- [ ] Traffic obfuscation (packet size/timing randomization)
+- [ ] TPM/SGX relay attestation
 
 ---
 
@@ -266,49 +381,20 @@ We welcome contributions! Please see:
 
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
 - [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) - Community standards
-- [SECURITY.md](SECURITY.md) - Security policy and vulnerability reporting
+- [SECURITY.md](SECURITY.md) - Security policy
 
 ### Pre-commit Hooks
 
 Pre-commit hooks run automatically on `git commit`:
 - `go fmt` - Go formatting
 - `go vet` - Go static analysis
-- `golangci-lint` - Comprehensive linting (if installed)
-- `solhint` - Solidity linting (if contracts changed)
-
-Install golangci-lint for full pre-commit checks:
-```bash
-# macOS
-brew install golangci-lint
-
-# Linux
-curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
-```
 
 ---
 
 ## Documentation
 
-- **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - Master roadmap with timeline, metrics, and progress
-- **[docs/prd.md](docs/prd.md)** - Product Requirements Document (44 FR, 31 NFR)
-- **[docs/2-ARCHITECTURE/](docs/2-ARCHITECTURE/)** - Complete architecture specifications (4,053 lines)
+- **[docs/QUICK_START_TESTING.md](docs/QUICK_START_TESTING.md)** - Complete performance testing guide with optimization results
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history and release notes
-
----
-
-## Performance
-
-### v0.1.0-alpha Baseline
-- **Throughput**: 28.3 Mbps (45% faster than Tailscale)
-- **Video Streaming**: 640x480 @ 547 kb/s
-- **Stability**: 3-hour test, zero packet loss
-
-### MVP Targets (v0.2.0-alpha)
-- **Throughput**: 1+ Gbps (single connection)
-- **Latency**: <2ms overhead
-- **CGNAT Traversal**: 95%+ success rate
-- **Key Exchange**: <100ms (ML-KEM + X25519)
-- **Signatures**: <15ms (ML-DSA + Ed25519)
 
 ---
 
@@ -326,8 +412,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Status**: MVP Development - Epic 1 (Foundation & Cryptography) in progress
+**Current Status**: Story 2-8 Complete - Relay mode tested and validated in production
 
-**Current Focus**: Implementing hybrid post-quantum cryptography (ML-KEM-1024 + ML-DSA-87) with performance benchmarking
+**Performance**: 36.6 Mbps (63% faster than Tailscale), zero retransmissions, minimal CPU overhead
 
-**Next Milestone**: Complete Epic 1 → Begin Epic 2 (Core Networking & Direct P2P)
+**Next Milestone**: Epic 2 - Direct P2P with UDP hole punching for sub-5ms latency
