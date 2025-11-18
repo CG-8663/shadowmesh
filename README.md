@@ -29,7 +29,10 @@ ShadowMesh is a peer-to-peer encrypted private network with relay fallback for S
 
 ### In Progress 🚧
 
-- [ ] Epic 2: Direct P2P with UDP hole punching
+- [x] Epic 2: Direct P2P with UDP hole punching (Implementation complete, testing pending)
+
+### Planned 📋
+
 - [ ] Epic 3: Smart contract relay registry
 - [ ] Epic 4: Post-quantum cryptography (ML-KEM + ML-DSA)
 - [ ] Epic 5: Monitoring and metrics

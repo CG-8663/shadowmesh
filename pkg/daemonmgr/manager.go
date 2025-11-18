@@ -199,6 +199,7 @@ func (dm *DaemonManager) Stop() error {
 }
 
 // Connect establishes P2P connection to peer (or relay server)
+// Attempts direct UDP P2P first, then falls back to relay if needed
 func (dm *DaemonManager) Connect(peerAddr string) error {
 	dm.stateMu.Lock()
 	if dm.state == StateConnected {
@@ -213,34 +214,86 @@ func (dm *DaemonManager) Connect(peerAddr string) error {
 		dm.p2pConnection = NewP2PConnection()
 	}
 
-	// Check if relay mode is enabled
-	if dm.config.Relay.Enabled {
-		log.Printf("Connecting via relay server: %s (peer ID: %s)", dm.config.Relay.Server, dm.config.Peer.ID)
+	// Strategy: Try direct UDP P2P first, fallback to relay if needed
+	directP2PSuccess := false
 
-		// Enable relay mode
-		dm.p2pConnection.EnableRelayMode(dm.config.Relay.Server, dm.config.Peer.ID)
+	// Attempt direct UDP P2P if NAT components are available and peerAddr provided
+	if dm.config.NAT.Enabled && dm.natDetector != nil && dm.holePuncher != nil && peerAddr != "" {
+		log.Printf("Attempting direct UDP P2P connection to %s...", peerAddr)
 
-		// Connect to relay server
-		if err := dm.p2pConnection.ConnectViaRelay(); err != nil {
-			dm.setState(StateError, err)
-			return fmt.Errorf("relay connection failed: %w", err)
+		// Check if NAT type is compatible with P2P
+		if dm.natDetector.IsP2PFeasible() {
+			log.Printf("NAT type is compatible with direct P2P, attempting UDP hole punching...")
+
+			// TODO: Exchange candidates with peer (requires signaling mechanism)
+			// For now, we'll create a simple candidate from the peer address
+			host, portStr, err := net.SplitHostPort(peerAddr)
+			if err == nil {
+				port := 0
+				fmt.Sscanf(portStr, "%d", &port)
+
+				remoteCandidates := []nat.Candidate{
+					{
+						Type: "host",
+						IP:   host,
+						Port: port,
+					},
+				}
+
+				// Attempt UDP hole punching (500ms timeout)
+				udpConn, err := dm.holePuncher.EstablishConnection(remoteCandidates)
+				if err != nil {
+					log.Printf("⚠️  UDP hole punching failed: %v", err)
+					log.Printf("Falling back to relay mode...")
+				} else {
+					// UDP hole punching succeeded!
+					peerUDPAddr, _ := net.ResolveUDPAddr("udp", peerAddr)
+					if err := dm.p2pConnection.ConnectUDP(udpConn, peerUDPAddr); err != nil {
+						log.Printf("⚠️  UDP connection setup failed: %v", err)
+						udpConn.Close()
+					} else {
+						log.Printf("✅ Direct UDP P2P connection established to %s", peerAddr)
+						directP2PSuccess = true
+					}
+				}
+			}
+		} else {
+			log.Printf("NAT type not compatible with direct P2P (Symmetric NAT detected)")
+			log.Printf("Falling back to relay mode...")
 		}
-
-		log.Printf("✅ Connected to relay server successfully")
-	} else {
-		log.Printf("Connecting to peer directly: %s", peerAddr)
-
-		// Establish direct WebSocket connection
-		if err := dm.p2pConnection.Connect(peerAddr); err != nil {
-			dm.setState(StateError, err)
-			return fmt.Errorf("connection failed: %w", err)
-		}
-
-		// Update config with peer address
-		dm.config.Peer.Address = peerAddr
-
-		log.Printf("✅ Connected to peer directly")
 	}
+
+	// Fallback to relay mode if direct P2P failed or wasn't attempted
+	if !directP2PSuccess {
+		if dm.config.Relay.Enabled {
+			log.Printf("Connecting via relay server: %s (peer ID: %s)", dm.config.Relay.Server, dm.config.Peer.ID)
+
+			// Enable relay mode
+			dm.p2pConnection.EnableRelayMode(dm.config.Relay.Server, dm.config.Peer.ID)
+
+			// Connect to relay server
+			if err := dm.p2pConnection.ConnectViaRelay(); err != nil {
+				dm.setState(StateError, err)
+				return fmt.Errorf("relay connection failed: %w", err)
+			}
+
+			log.Printf("✅ Connected to relay server successfully")
+		} else {
+			// No relay available, try direct WebSocket as last resort
+			log.Printf("Connecting to peer via WebSocket: %s", peerAddr)
+
+			// Establish direct WebSocket connection
+			if err := dm.p2pConnection.Connect(peerAddr); err != nil {
+				dm.setState(StateError, err)
+				return fmt.Errorf("connection failed: %w", err)
+			}
+
+			log.Printf("✅ Connected to peer via WebSocket")
+		}
+	}
+
+	// Update config with peer address
+	dm.config.Peer.Address = peerAddr
 
 	// Start frame router
 	dm.startFrameRouter()

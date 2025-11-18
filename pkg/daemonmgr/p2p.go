@@ -18,10 +18,27 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// P2PConnection manages a single WebSocket P2P connection
+// TransportMode defines the connection transport type
+type TransportMode int
+
+const (
+	TransportWebSocket TransportMode = iota // WebSocket transport (relay mode)
+	TransportUDP                             // UDP transport (direct P2P)
+)
+
+// P2PConnection manages a single P2P connection (UDP or WebSocket)
 type P2PConnection struct {
+	// Transport mode
+	transportMode TransportMode
+
+	// WebSocket connection (relay mode)
 	conn      *websocket.Conn
 	connMutex sync.RWMutex
+
+	// UDP connection (direct P2P mode)
+	udpConn      *net.UDPConn
+	udpPeerAddr  *net.UDPAddr
+	udpConnMutex sync.RWMutex
 
 	peerAddr string
 
@@ -59,9 +76,32 @@ func NewP2PConnection() *P2PConnection {
 	}
 }
 
+// ConnectUDP establishes direct UDP P2P connection using hole punching
+func (p *P2PConnection) ConnectUDP(udpConn *net.UDPConn, peerAddr *net.UDPAddr) error {
+	p.peerAddr = peerAddr.String()
+	p.transportMode = TransportUDP
+
+	p.udpConnMutex.Lock()
+	p.udpConn = udpConn
+	p.udpPeerAddr = peerAddr
+	p.udpConnMutex.Unlock()
+
+	p.setConnected(true)
+
+	log.Printf("✅ Direct UDP P2P connection established to %s", peerAddr)
+
+	// Start send/receive goroutines for UDP
+	p.wg.Add(2)
+	go p.sendLoopUDP()
+	go p.recvLoopUDP()
+
+	return nil
+}
+
 // Connect establishes WebSocket connection to peer
 func (p *P2PConnection) Connect(peerAddr string) error {
 	p.peerAddr = peerAddr
+	p.transportMode = TransportWebSocket
 
 	// Parse peer address
 	host, port, err := net.SplitHostPort(peerAddr)
@@ -160,11 +200,19 @@ func (p *P2PConnection) RecvChannel() <-chan []byte {
 func (p *P2PConnection) Close() error {
 	p.cancel()
 
+	// Close WebSocket connection if exists
 	p.connMutex.Lock()
 	if p.conn != nil {
 		p.conn.Close()
 	}
 	p.connMutex.Unlock()
+
+	// Close UDP connection if exists
+	p.udpConnMutex.Lock()
+	if p.udpConn != nil {
+		p.udpConn.Close()
+	}
+	p.udpConnMutex.Unlock()
 
 	p.setConnected(false)
 
@@ -237,6 +285,92 @@ func (p *P2PConnection) recvLoop() {
 	}
 }
 
+// sendLoopUDP sends frames over UDP
+func (p *P2PConnection) sendLoopUDP() {
+	defer p.wg.Done()
+
+	for {
+		select {
+		case <-p.ctx.Done():
+			return
+		case frame := <-p.sendChan:
+			p.udpConnMutex.RLock()
+			conn := p.udpConn
+			peerAddr := p.udpPeerAddr
+			p.udpConnMutex.RUnlock()
+
+			if conn == nil || peerAddr == nil {
+				continue
+			}
+
+			// Send UDP packet
+			_, err := conn.WriteToUDP(frame, peerAddr)
+			if err != nil {
+				log.Printf("⚠️  Failed to send UDP frame: %v", err)
+				p.setConnected(false)
+				return
+			}
+		}
+	}
+}
+
+// recvLoopUDP receives frames from UDP
+func (p *P2PConnection) recvLoopUDP() {
+	defer p.wg.Done()
+
+	buffer := make([]byte, 65535) // Maximum UDP packet size
+
+	for {
+		select {
+		case <-p.ctx.Done():
+			return
+		default:
+			p.udpConnMutex.RLock()
+			conn := p.udpConn
+			peerAddr := p.udpPeerAddr
+			p.udpConnMutex.RUnlock()
+
+			if conn == nil {
+				return
+			}
+
+			// Set read deadline to allow checking ctx.Done()
+			conn.SetReadDeadline(time.Now().Add(1 * time.Second))
+
+			// Read UDP packet
+			n, addr, err := conn.ReadFromUDP(buffer)
+			if err != nil {
+				// Check if it's a timeout (expected for ctx.Done() checking)
+				if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+					continue
+				}
+				log.Printf("⚠️  UDP read error: %v", err)
+				p.setConnected(false)
+				return
+			}
+
+			// Verify packet is from expected peer
+			if peerAddr != nil && !addr.IP.Equal(peerAddr.IP) {
+				log.Printf("⚠️  Received UDP packet from unexpected address: %v (expected %v)", addr, peerAddr)
+				continue
+			}
+
+			// Make a copy of the data
+			data := make([]byte, n)
+			copy(data, buffer[:n])
+
+			// Send to receive channel
+			select {
+			case p.recvChan <- data:
+			case <-p.ctx.Done():
+				return
+			default:
+				log.Printf("⚠️  Receive buffer full, dropping UDP frame")
+			}
+		}
+	}
+}
+
 // handleWebSocket handles incoming WebSocket connections
 func (p *P2PConnection) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{
@@ -304,6 +438,8 @@ func (p *P2PConnection) ConnectViaRelay() error {
 	if !p.relayMode {
 		return fmt.Errorf("relay mode not enabled")
 	}
+
+	p.transportMode = TransportWebSocket
 
 	// Build relay URL with /relay path and peer ID
 	relayURL := fmt.Sprintf("%s/relay?peer_id=%s", p.relayServer, p.peerID)
