@@ -65,8 +65,8 @@ func NewTAPDevice(config TAPConfig) (*TAPDevice, error) {
 		iface:     iface,
 		name:      iface.Name(), // Actual OS-assigned name (may differ from config.Name on macOS)
 		mtu:       config.MTU,
-		readChan:  make(chan *EthernetFrame, 100),
-		writeChan: make(chan []byte, 100),
+		readChan:  make(chan *EthernetFrame, 2000), // Increased from 100 to handle burst traffic
+		writeChan: make(chan []byte, 2000),         // Increased from 100 to prevent "TAP write channel full" errors
 		errorChan: make(chan error, 10),
 		ctx:       ctx,
 		cancel:    cancel,
