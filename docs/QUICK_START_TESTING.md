@@ -1086,10 +1086,10 @@ The 2.4x performance difference between directions suggests:
 │   Direction     │  Throughput │  Retrans  │ TAP Warnings │   Status   │
 ├─────────────────┼─────────────┼───────────┼──────────────┼────────────┤
 │ 002→001         │   34.9 Mbps │     0     │      0       │ ⭐ Best    │
-│ (Raspi→Mac)     │             │           │              │            │
+│ (Raspi→Intel)   │             │           │              │            │
 ├─────────────────┼─────────────┼───────────┼──────────────┼────────────┤
 │ 001→002         │   13.0 Mbps │     0     │      0       │ ⚠️  Slow   │
-│ (Mac→Raspi)     │             │           │              │            │
+│ (Intel→Raspi)   │             │           │              │            │
 ├─────────────────┼─────────────┼───────────┼──────────────┼────────────┤
 │ Asymmetry Ratio │    2.7x     │           │              │            │
 └─────────────────┴─────────────┴───────────┴──────────────┴────────────┘
@@ -1110,13 +1110,13 @@ The 2.4x performance difference between directions suggests:
 
 **Complete Test Data:**
 
-**ShadowMesh 002→001 (Raspi→Mac, 30s, 4 parallel):**
+**ShadowMesh 002→001 (Raspi→Intel VM, 30s, 4 parallel):**
 ```
 [SUM]   0.00-30.00  sec   133 MBytes  37.2 Mbits/sec    0             sender
 [SUM]   0.00-30.21  sec   126 MBytes  34.9 Mbits/sec                  receiver
 ```
 
-**ShadowMesh 001→002 (Mac→Raspi, 30s, 4 parallel):**
+**ShadowMesh 001→002 (Intel VM→Raspi, 30s, 4 parallel):**
 ```
 [SUM]   0.00-30.00  sec  49.8 MBytes  13.9 Mbits/sec    0             sender
 [SUM]   0.00-30.10  sec  46.8 MBytes  13.0 Mbits/sec                  receiver
@@ -1130,7 +1130,7 @@ Download: 48.31 Mbit/s
 Upload:   48.07 Mbit/s
 ```
 
-**shadowmesh-001 (Mac Studio, London):**
+**shadowmesh-001 (Intel Xeon D-2166NT VM, London):**
 ```
 Download: 44.59 Mbit/s
 Upload:   14.44 Mbps  ← BOTTLENECK for 001→002 direction
@@ -1161,7 +1161,7 @@ Upload:   14.44 Mbps  ← BOTTLENECK for 001→002 direction
 │  Endpoint    │  Direction  │  Throughput  │ Upload Limit │   Util %   │
 ├──────────────┼─────────────┼──────────────┼──────────────┼────────────┤
 │ shadowmesh-  │ Sending     │   13.0 Mbps  │  14.44 Mbps  │ ⭐ 90.0%   │
-│ 001 (Mac)    │ (001→002)   │              │              │            │
+│ 001 (Intel)  │ (001→002)   │              │              │            │
 ├──────────────┼─────────────┼──────────────┼──────────────┼────────────┤
 │ shadowmesh-  │ Sending     │   34.9 Mbps  │  48.07 Mbps  │ ✅ 72.6%   │
 │ 002 (Raspi)  │ (002→001)   │              │              │            │
@@ -1178,7 +1178,7 @@ Upload:   14.44 Mbps  ← BOTTLENECK for 001→002 direction
 - ✅ ShadowMesh tunnel overhead is minimal (<10% in worst case)
 - ✅ ChaCha20-Poly1305 encryption is not a bottleneck
 - ✅ Relay server routing is efficient in both directions
-- ✅ TAP device performance is excellent on both macOS and Linux
+- ✅ TAP device performance is excellent on both x86_64 and ARM Linux
 - ⭐ **ShadowMesh scales to available bandwidth automatically**
 
 ### Further Optimization Investigation
