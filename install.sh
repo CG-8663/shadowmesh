@@ -118,8 +118,29 @@ if [[ "$proceed" =~ ^[Nn]$ ]]; then
 fi
 echo ""
 
+# Step 0: Cleanup old installations
+print_info "Step 0/7: Cleaning up old installations..."
+systemctl stop shadowmesh 2>/dev/null || true
+systemctl stop shadowmesh-client 2>/dev/null || true
+systemctl stop shadowmesh-daemon 2>/dev/null || true
+systemctl stop shadowmesh-relay 2>/dev/null || true
+systemctl disable shadowmesh 2>/dev/null || true
+systemctl disable shadowmesh-client 2>/dev/null || true
+systemctl disable shadowmesh-daemon 2>/dev/null || true
+systemctl disable shadowmesh-relay 2>/dev/null || true
+pkill -9 shadowmesh 2>/dev/null || true
+sleep 2
+rm -f /etc/systemd/system/shadowmesh.service
+rm -f /etc/systemd/system/shadowmesh-client.service
+rm -f /etc/systemd/system/shadowmesh-daemon.service
+rm -f /etc/systemd/system/shadowmesh-relay.service
+ip link delete chr001 2>/dev/null || true
+ip link delete chr-api 2>/dev/null || true
+print_success "Old installations cleaned"
+echo ""
+
 # Step 1: Install dependencies
-print_info "Step 1/7: Installing dependencies..."
+print_info "Step 1/8: Installing dependencies..."
 if command -v apt-get &> /dev/null; then
     apt-get update -qq
     apt-get install -y -qq git curl wget openssl iptables > /dev/null 2>&1
@@ -131,7 +152,7 @@ echo ""
 
 # Step 2: Install Go if needed
 if ! command -v go &> /dev/null; then
-    print_info "Step 2/7: Installing Go 1.23.3..."
+    print_info "Step 2/8: Installing Go 1.23.3..."
     cd /tmp
     wget -q https://go.dev/dl/go1.23.3.linux-amd64.tar.gz
     rm -rf /usr/local/go
@@ -141,12 +162,12 @@ if ! command -v go &> /dev/null; then
     echo 'export PATH=$PATH:/usr/local/go/bin' >> /root/.bashrc
     print_success "Go installed: $(go version)"
 else
-    print_info "Step 2/7: Go already installed: $(go version)"
+    print_info "Step 2/8: Go already installed: $(go version)"
 fi
 echo ""
 
 # Step 3: Clone repository
-print_info "Step 3/7: Cloning ShadowMesh repository..."
+print_info "Step 3/8: Cloning ShadowMesh repository..."
 if [ -d "$INSTALL_DIR" ]; then
     print_info "Repository exists, updating..."
     cd "$INSTALL_DIR"
@@ -161,7 +182,7 @@ print_success "Repository ready"
 echo ""
 
 # Step 4: Build binary
-print_info "Step 4/7: Building ShadowMesh daemon..."
+print_info "Step 4/8: Building ShadowMesh daemon..."
 export PATH=$PATH:/usr/local/go/bin
 cd "$INSTALL_DIR"
 go build -ldflags="-s -w" -o bin/shadowmesh-daemon ./cmd/shadowmesh-daemon/ 2>&1 | grep -v "go: downloading" || true
@@ -169,14 +190,14 @@ print_success "Binary built"
 echo ""
 
 # Step 5: Install binary
-print_info "Step 5/7: Installing binary..."
+print_info "Step 5/8: Installing binary..."
 cp bin/shadowmesh-daemon /usr/local/bin/
 chmod +x /usr/local/bin/shadowmesh-daemon
 print_success "Binary installed to /usr/local/bin/shadowmesh-daemon"
 echo ""
 
 # Step 6: Create configuration
-print_info "Step 6/7: Creating configuration..."
+print_info "Step 6/8: Creating configuration..."
 mkdir -p /etc/shadowmesh
 
 # Generate encryption key (or use shared key for mesh)
@@ -225,18 +246,7 @@ print_success "Configuration created at /etc/shadowmesh/daemon.yaml"
 echo ""
 
 # Step 7: Create systemd service
-print_info "Step 7/7: Creating systemd service..."
-
-# Stop old services
-systemctl stop shadowmesh 2>/dev/null || true
-systemctl stop shadowmesh-client 2>/dev/null || true
-systemctl stop shadowmesh-daemon 2>/dev/null || true
-systemctl disable shadowmesh 2>/dev/null || true
-systemctl disable shadowmesh-client 2>/dev/null || true
-
-# Remove old service files
-rm -f /etc/systemd/system/shadowmesh.service
-rm -f /etc/systemd/system/shadowmesh-client.service
+print_info "Step 7/8: Creating systemd service..."
 
 # Create new service
 cat > /etc/systemd/system/shadowmesh-daemon.service << 'EOF'
@@ -265,10 +275,8 @@ sleep 3
 print_success "Service created and started"
 echo ""
 
-# Verify installation
-echo "════════════════════════════════════════════════════════"
-echo "Verifying installation..."
-echo "════════════════════════════════════════════════════════"
+# Step 8: Verify installation
+print_info "Step 8/8: Verifying installation..."
 echo ""
 
 if systemctl is-active --quiet shadowmesh-daemon; then
