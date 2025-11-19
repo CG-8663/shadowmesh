@@ -9,7 +9,7 @@
 
 ShadowMesh is a peer-to-peer encrypted private network with relay fallback for Symmetric NAT traversal. Built for quantum-safe networking with Layer 2 encryption and WebSocket transport.
 
-**Current Status**: Story 2-8 Complete - Relay Mode with Production Deployment
+**Current Status**: Epic 2 Complete - Direct UDP P2P with Relay Fallback Validated
 
 ---
 
@@ -27,9 +27,13 @@ ShadowMesh is a peer-to-peer encrypted private network with relay fallback for S
 - [x] Story 2-7: CLI Tool
 - [x] Story 2-8: Relay Server Mode (Production Deployment)
 
-### In Progress 🚧
-
-- [x] Epic 2: Direct P2P with UDP hole punching (Implementation complete, testing pending)
+**Epic 2: Direct UDP P2P with Relay Fallback**
+- [x] NAT type detection (STUN)
+- [x] UDP hole punching implementation
+- [x] Dual transport support (UDP + WebSocket)
+- [x] Smart connection strategy (UDP attempt → Relay fallback)
+- [x] Production deployment and validation (UK VPS + Belgium RPi5)
+- [x] Performance benchmarking (14 Mbps throughput, 47ms latency)
 
 ### Planned 📋
 

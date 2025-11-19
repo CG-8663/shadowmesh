@@ -370,21 +370,79 @@ iperf3 -c 10.10.10.4 -B 10.10.10.3 -t 30 -P 4
 
 ## Test Results
 
-### Test Run 1: Localhost Relay Fallback
+### Test Run 1: Production Deployment - Relay Fallback
 
-**Date**: TBD
-**Environment**: MacOS Localhost
-**Result**: PENDING
+**Date**: 2025-11-19
+**Environment**: Production endpoints (UK VPS + Belgium RPi5)
+**Result**: ✅ SUCCESS
+
+**Configuration**:
+- Endpoint 1: shadowmesh-001 (UK VPS, Intel AMD64) - 100.115.193.115
+- Endpoint 2: shadowmesh-002 (Belgium RPi5, ARM64) - 100.90.48.10
+- Relay Server: ws://94.237.121.21:9545
+- TAP Devices: tap0 (10.10.10.3/24), tap1 (10.10.10.4/24)
+
+**NAT Detection Results**:
+- Both endpoints detected as **Symmetric NAT**
+- P2P Feasibility: false (as expected)
+- System correctly skipped UDP hole punching
+- Automatic fallback to relay mode triggered
+
+**Connection Results**:
+- Both daemons connected to relay server successfully
+- Connection established: ✅
+- Connection mode: WebSocket relay (UDP P2P not feasible)
+
+**Ping Latency Test**:
+```
+Endpoint 1 → Endpoint 2 (UK → Belgium):
+- Average: 47.1ms
+- Range: 44.5ms - 51.3ms
+- Packet loss: 0%
+
+Endpoint 2 → Endpoint 1 (Belgium → UK):
+- Average: 59.7ms
+- Range: 47.7ms - 102ms
+- Packet loss: 0%
+```
+
+**iperf3 Throughput Test** (30 seconds, 4 parallel streams):
+```
+Aggregate Throughput:
+- Sender: 14.2 Mbps
+- Receiver: 13.1 Mbps
+- Retransmissions: 0 (no packet loss)
+
+Per-Stream Performance:
+- Stream 1: 4.05 Mbps
+- Stream 2: 3.88 Mbps
+- Stream 3: 3.36 Mbps
+- Stream 4: 2.94 Mbps
+```
+
+**Analysis**:
+- ✅ NAT detection working correctly (Symmetric NAT identified)
+- ✅ Relay fallback triggered as designed
+- ✅ Connection establishment successful
+- ✅ Stable connectivity (0% packet loss)
+- ⚠️ Throughput (14 Mbps) below 30 Mbps target
+  - Likely bottleneck: RPi5 CPU on ChaCha20-Poly1305 encryption
+  - Future optimization: Hardware acceleration, buffer tuning
+
+**Conclusion**:
+Epic 2 relay fallback functionality validated successfully on production infrastructure. System correctly detects incompatible NAT types and seamlessly falls back to relay mode with stable, encrypted connectivity.
 
 ---
 
 ### Test Run 2: Real UDP P2P (Two Machines)
 
-**Date**: TBD
-**Environment**: TBD
+**Date**: Not yet tested
+**Environment**: Requires endpoints with compatible NAT types (Full Cone or Restricted Cone)
 **Result**: PENDING
+
+**Notes**: Current production endpoints both have Symmetric NAT, which prevents UDP hole punching. To test direct UDP P2P, would need endpoints with compatible NAT configurations or cloud VMs with Full Cone NAT.
 
 ---
 
-**Epic 2 Status**: Implementation Complete, Testing in Progress
+**Epic 2 Status**: Implementation Complete, Relay Fallback Validated ✅
 **Next Milestone**: Epic 3 - Smart Contract Relay Registry

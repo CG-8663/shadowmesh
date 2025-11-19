@@ -59,10 +59,10 @@ func (api *DaemonAPI) Stop() error {
 
 // ConnectRequest represents a connect request from CLI
 type ConnectRequest struct {
-	PeerAddress  string `json:"peer_address"`  // e.g., "192.168.1.100:9001"
-	UseRelay     bool   `json:"use_relay"`     // true to use relay server
-	RelayServer  string `json:"relay_server"`  // e.g., "94.237.121.21:9545" (optional, uses default if empty)
-	PeerID       string `json:"peer_id"`       // peer ID for relay mode (optional, auto-generated if empty)
+	PeerAddress string `json:"peer_address"` // e.g., "192.168.1.100:9001"
+	UseRelay    bool   `json:"use_relay"`    // true to use relay server
+	RelayServer string `json:"relay_server"` // e.g., "94.237.121.21:9545" (optional, uses default if empty)
+	PeerID      string `json:"peer_id"`      // peer ID for relay mode (optional, auto-generated if empty)
 }
 
 // ConnectResponse represents the response to a connect request
