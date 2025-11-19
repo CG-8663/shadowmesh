@@ -58,6 +58,7 @@ temp/
 # Project files
 *.md
 !README.md
+!INSTALL.md
 !LICENSE
 !CONTRIBUTING.md
 !CODE_OF_CONDUCT.md
