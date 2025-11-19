@@ -1,0 +1,42 @@
+# ShadowMesh Daemon Configuration - Endpoint 2 (UDP P2P Test)
+# Epic 2: Direct UDP P2P with Relay Fallback
+#
+# This endpoint will attempt UDP hole punching first, then fallback to relay
+
+daemon:
+  # HTTP API listen address (for CLI communication)
+  listen_address: "127.0.0.1:9091"
+  log_level: "info"
+
+network:
+  # TAP device name
+  tap_device: "tap1"
+
+  # Local IP address with CIDR notation
+  local_ip: "10.10.10.4/24"
+
+encryption:
+  # ChaCha20-Poly1305 encryption key (32 bytes hex-encoded)
+  # MUST match endpoint 1
+  key: "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789"
+
+peer:
+  # Peer address - set via CLI connect command
+  address: ""
+
+  # Peer ID for relay mode
+  id: "endpoint2"
+
+nat:
+  # Enable NAT detection and UDP hole punching
+  enabled: true
+
+  # STUN server for public IP/port discovery
+  stun_server: "stun.l.google.com:19302"
+
+relay:
+  # Enable relay fallback if UDP hole punching fails
+  enabled: true
+
+  # Production relay server
+  server: "ws://94.237.121.21:9545"
