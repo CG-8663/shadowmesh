@@ -167,11 +167,21 @@ echo ""
 # Step 2: Install Go if needed
 if ! command -v go &> /dev/null; then
     print_info "Step 2/8: Installing Go 1.23.3..."
+
+    # Detect architecture
+    ARCH=$(uname -m)
+    case $ARCH in
+        x86_64) GO_ARCH="amd64" ;;
+        aarch64|arm64) GO_ARCH="arm64" ;;
+        armv7l) GO_ARCH="armv6l" ;;
+        *) print_error "Unsupported architecture: $ARCH"; exit 1 ;;
+    esac
+
     cd /tmp
-    wget -q https://go.dev/dl/go1.23.3.linux-amd64.tar.gz
+    wget -q https://go.dev/dl/go1.23.3.linux-${GO_ARCH}.tar.gz
     rm -rf /usr/local/go
-    tar -C /usr/local -xzf go1.23.3.linux-amd64.tar.gz
-    rm go1.23.3.linux-amd64.tar.gz
+    tar -C /usr/local -xzf go1.23.3.linux-${GO_ARCH}.tar.gz
+    rm go1.23.3.linux-${GO_ARCH}.tar.gz
     export PATH=$PATH:/usr/local/go/bin
     echo 'export PATH=$PATH:/usr/local/go/bin' >> /root/.bashrc
     print_success "Go installed: $(go version)"
