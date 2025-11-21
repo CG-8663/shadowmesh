@@ -148,6 +148,25 @@ func (dm *DaemonManager) Start(ctx context.Context) error {
 
 	log.Printf("✅ All daemon components initialized successfully")
 
+	// Phase 6: Auto-connect to relay/peer if configured
+	if dm.config.Peer.Address != "" {
+		log.Printf("Auto-connecting to configured peer/relay: %s", dm.config.Peer.Address)
+
+		// Start connection in background to avoid blocking startup
+		dm.wg.Add(1)
+		go func() {
+			defer dm.wg.Done()
+
+			// Wait a moment for all components to be fully ready
+			time.Sleep(1 * time.Second)
+
+			if err := dm.Connect(dm.config.Peer.Address); err != nil {
+				log.Printf("⚠️  Auto-connect failed: %v", err)
+				log.Printf("   Daemon still running - use API to connect manually")
+			}
+		}()
+	}
+
 	return nil
 }
 
@@ -265,11 +284,37 @@ func (dm *DaemonManager) Connect(peerAddr string) error {
 
 	// Fallback to relay mode if direct P2P failed or wasn't attempted
 	if !directP2PSuccess {
-		if dm.config.Relay.Enabled {
-			log.Printf("Connecting via relay server: %s (peer ID: %s)", dm.config.Relay.Server, dm.config.Peer.ID)
+		// Determine relay server address
+		// Priority: explicit relay.server > peer.address (if port 9545)
+		relayServer := ""
+		if dm.config.Relay.Enabled && dm.config.Relay.Server != "" {
+			relayServer = dm.config.Relay.Server
+		} else {
+			// Check if peer address is a relay server (port 9545)
+			host, portStr, err := net.SplitHostPort(peerAddr)
+			if err == nil && (portStr == "9545" || portStr == "8545") {
+				// Construct WebSocket URL for relay
+				relayServer = fmt.Sprintf("ws://%s:%s/relay", host, portStr)
+			}
+		}
+
+		if relayServer != "" {
+			// Generate peer ID if not configured
+			peerID := dm.config.Peer.ID
+			if peerID == "" {
+				// Use local IP as peer ID
+				ip, _, _ := net.ParseCIDR(dm.config.Network.LocalIP)
+				if ip != nil {
+					peerID = fmt.Sprintf("peer-%s", ip.String())
+				} else {
+					peerID = "peer-unknown"
+				}
+			}
+
+			log.Printf("Connecting via relay server: %s (peer ID: %s)", relayServer, peerID)
 
 			// Enable relay mode
-			dm.p2pConnection.EnableRelayMode(dm.config.Relay.Server, dm.config.Peer.ID)
+			dm.p2pConnection.EnableRelayMode(relayServer, peerID)
 
 			// Connect to relay server
 			if err := dm.p2pConnection.ConnectViaRelay(); err != nil {
