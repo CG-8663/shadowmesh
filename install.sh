@@ -50,7 +50,7 @@ print_info "Primary IP: $CURRENT_IP"
 echo ""
 
 # Auto-detect based on hostname or IP (check most specific patterns first)
-if [[ "$HOSTNAME" == *"shadowmesh-001"* ]] || [[ "$HOSTNAME" == *"uk"* ]] || [[ "$CURRENT_IP" == "100.86.59.47" ]]; then
+if [[ "$HOSTNAME" == *"shadowmesh-001"* ]] || [[ "$HOSTNAME" == *"uk"* ]] || [[ "$CURRENT_IP" == "100.115.193.115" ]]; then
     NODE_NAME="UK Client"
     NODE_IP="10.10.10.3/24"
     AUTO_DETECTED=true
