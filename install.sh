@@ -49,7 +49,7 @@ print_info "Hostname: $HOSTNAME"
 print_info "Primary IP: $CURRENT_IP"
 echo ""
 
-# Auto-detect based on hostname or IP
+# Auto-detect based on hostname or IP (check most specific patterns first)
 if [[ "$HOSTNAME" == *"shadowmesh-001"* ]] || [[ "$HOSTNAME" == *"uk"* ]] || [[ "$CURRENT_IP" == "100.86.59.47" ]]; then
     NODE_NAME="UK Client"
     NODE_IP="10.10.10.3/24"
@@ -58,13 +58,13 @@ elif [[ "$HOSTNAME" == *"shadowmesh-002"* ]] || [[ "$HOSTNAME" == *"belgium"* ]]
     NODE_NAME="Belgium Client"
     NODE_IP="10.10.10.4/24"
     AUTO_DETECTED=true
-elif [[ "$HOSTNAME" == *"chronara"* ]] || [[ "$HOSTNAME" == *"vm111"* ]] || [[ "$CURRENT_IP" == *"10.10.10.5"* ]]; then
-    NODE_NAME="Chronara API Client"
-    NODE_IP="10.10.10.5/24"
-    AUTO_DETECTED=true
 elif [[ "$HOSTNAME" == *"shadowmesh-004"* ]] || [[ "$HOSTNAME" == *"chronara-pi-client-ph"* ]] || [[ "$HOSTNAME" == *"philippines"* ]] || [[ "$HOSTNAME" == *"-ph"* ]] || [[ "$CURRENT_IP" == "100.87.142.44" ]]; then
     NODE_NAME="Philippines Client"
     NODE_IP="10.10.10.6/24"
+    AUTO_DETECTED=true
+elif [[ "$HOSTNAME" == *"chronara"* ]] || [[ "$HOSTNAME" == *"vm111"* ]] || [[ "$CURRENT_IP" == *"10.10.10.5"* ]]; then
+    NODE_NAME="Chronara API Client"
+    NODE_IP="10.10.10.5/24"
     AUTO_DETECTED=true
 else
     AUTO_DETECTED=false
