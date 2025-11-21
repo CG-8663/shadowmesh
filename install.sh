@@ -62,6 +62,10 @@ elif [[ "$HOSTNAME" == *"chronara"* ]] || [[ "$HOSTNAME" == *"vm111"* ]] || [[ "
     NODE_NAME="Chronara API Client"
     NODE_IP="10.10.10.5/24"
     AUTO_DETECTED=true
+elif [[ "$HOSTNAME" == *"shadowmesh-004"* ]] || [[ "$HOSTNAME" == *"chronara-pi-client-ph"* ]] || [[ "$HOSTNAME" == *"philippines"* ]] || [[ "$HOSTNAME" == *"-ph"* ]] || [[ "$CURRENT_IP" == "100.87.142.44" ]]; then
+    NODE_NAME="Philippines Client"
+    NODE_IP="10.10.10.6/24"
+    AUTO_DETECTED=true
 else
     AUTO_DETECTED=false
 fi
@@ -84,14 +88,16 @@ if [ "$AUTO_DETECTED" = false ]; then
     echo "  1) UK Client (10.10.10.3)"
     echo "  2) Belgium Client (10.10.10.4)"
     echo "  3) Chronara API Client (10.10.10.5)"
-    echo "  4) Custom"
-    read -p "Choice [1-4]: " choice
+    echo "  4) Philippines Client (10.10.10.6)"
+    echo "  5) Custom"
+    read -p "Choice [1-5]: " choice
 
     case $choice in
         1) NODE_NAME="UK Client"; NODE_IP="10.10.10.3/24" ;;
         2) NODE_NAME="Belgium Client"; NODE_IP="10.10.10.4/24" ;;
         3) NODE_NAME="Chronara API Client"; NODE_IP="10.10.10.5/24" ;;
-        4)
+        4) NODE_NAME="Philippines Client"; NODE_IP="10.10.10.6/24" ;;
+        5)
             read -p "Node name: " NODE_NAME
             read -p "Mesh IP (x.x.x.x/24): " NODE_IP
             read -p "Relay IP [$RELAY_IP]: " custom_relay
