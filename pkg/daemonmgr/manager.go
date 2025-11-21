@@ -293,8 +293,8 @@ func (dm *DaemonManager) Connect(peerAddr string) error {
 			// Check if peer address is a relay server (port 9545)
 			host, portStr, err := net.SplitHostPort(peerAddr)
 			if err == nil && (portStr == "9545" || portStr == "8545") {
-				// Construct WebSocket URL for relay
-				relayServer = fmt.Sprintf("ws://%s:%s/relay", host, portStr)
+				// Construct WebSocket URL for relay (p2p.go will append /relay path)
+				relayServer = fmt.Sprintf("ws://%s:%s", host, portStr)
 			}
 		}
 
