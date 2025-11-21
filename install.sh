@@ -111,7 +111,15 @@ echo "  Mesh IP: $NODE_IP"
 echo "  Relay: $RELAY_IP:$RELAY_PORT"
 echo "════════════════════════════════════════════════════════"
 echo ""
-read -p "Proceed with installation? [Y/n]: " proceed
+
+# Check for non-interactive mode (via environment variable or stdin redirection)
+if [ -n "$SHADOWMESH_AUTO_INSTALL" ] || [ ! -t 0 ]; then
+    echo "Auto-confirming installation (non-interactive mode)"
+    proceed="y"
+else
+    read -p "Proceed with installation? [Y/n]: " proceed
+fi
+
 if [[ "$proceed" =~ ^[Nn]$ ]]; then
     echo "Installation cancelled"
     exit 0
@@ -119,7 +127,7 @@ fi
 echo ""
 
 # Step 0: Cleanup old installations
-print_info "Step 0/7: Cleaning up old installations..."
+print_info "Step 0/8: Cleaning up old installations..."
 systemctl stop shadowmesh 2>/dev/null || true
 systemctl stop shadowmesh-client 2>/dev/null || true
 systemctl stop shadowmesh-daemon 2>/dev/null || true
