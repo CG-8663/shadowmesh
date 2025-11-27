@@ -23,7 +23,9 @@ type DaemonConfig struct {
 	} `yaml:"daemon"`
 
 	Network struct {
-		TAPDevice string `yaml:"tap_device"`
+		Mode      string `yaml:"mode"`       // "tap" or "tun" (default: "tun" on macOS)
+		TAPDevice string `yaml:"tap_device"` // Device name (for backward compatibility)
+		DeviceName string `yaml:"device_name"` // Device name (preferred)
 		LocalIP   string `yaml:"local_ip"` // IP with CIDR (e.g., "10.0.0.1/24")
 	} `yaml:"network"`
 
@@ -45,6 +47,11 @@ type DaemonConfig struct {
 		Enabled bool   `yaml:"enabled"` // Use relay server instead of direct P2P
 		Server  string `yaml:"server"`  // Relay server URL (e.g., ws://94.237.121.21:9545/relay)
 	} `yaml:"relay"`
+
+	P2P struct {
+		ListenerEnabled bool `yaml:"listener_enabled"` // Enable P2P listener for incoming connections (default: true)
+		ListenerPort    int  `yaml:"listener_port"`    // P2P listener port (default: 9545)
+	} `yaml:"p2p"`
 }
 
 // ConnectionState represents daemon connection state
@@ -77,7 +84,7 @@ type DaemonManager struct {
 	config *DaemonConfig
 
 	// Epic 2 Components
-	tapDevice          *layer2.TAPDevice
+	tapDevice          layer2.NetworkDevice // Supports both TAP and TUN
 	encryptionPipeline *frameencryption.EncryptionPipeline
 	p2pConnection      *P2PConnection
 	natDetector        *nat.NATDetector
@@ -141,16 +148,43 @@ func (dm *DaemonManager) Start(ctx context.Context) error {
 		return fmt.Errorf("API initialization failed: %w", err)
 	}
 
-	// Phase 5: Start P2P WebSocket listener
-	if err := dm.initP2PListener(); err != nil {
-		return fmt.Errorf("P2P listener initialization failed: %w", err)
+	// Phase 5: Start P2P WebSocket listener (optional)
+	// Skip if explicitly disabled (useful for relay-only mode or multi-node testing on same machine)
+	listenerEnabled := true
+	if dm.config.P2P.ListenerEnabled == false {
+		listenerEnabled = false
+		log.Printf("P2P listener disabled by configuration")
+	}
+
+	if listenerEnabled {
+		if err := dm.initP2PListener(); err != nil {
+			return fmt.Errorf("P2P listener initialization failed: %w", err)
+		}
 	}
 
 	log.Printf("✅ All daemon components initialized successfully")
 
 	// Phase 6: Auto-connect to relay/peer if configured
-	if dm.config.Peer.Address != "" {
-		log.Printf("Auto-connecting to configured peer/relay: %s", dm.config.Peer.Address)
+	if dm.config.Relay.Enabled && dm.config.Relay.Server != "" {
+		log.Printf("Auto-connecting to relay server: %s", dm.config.Relay.Server)
+
+		// Start relay connection in background to avoid blocking startup
+		dm.wg.Add(1)
+		go func() {
+			defer dm.wg.Done()
+
+			// Wait a moment for all components to be fully ready
+			time.Sleep(1 * time.Second)
+
+			if err := dm.Connect(dm.config.Relay.Server); err != nil {
+				log.Printf("⚠️  Auto-connect to relay failed: %v", err)
+				log.Printf("   Daemon still running - use API to connect manually")
+			} else {
+				log.Printf("✅ Connected to relay server: %s", dm.config.Relay.Server)
+			}
+		}()
+	} else if dm.config.Peer.Address != "" {
+		log.Printf("Auto-connecting to configured peer: %s", dm.config.Peer.Address)
 
 		// Start connection in background to avoid blocking startup
 		dm.wg.Add(1)
@@ -410,21 +444,35 @@ func (dm *DaemonManager) GetStatus() map[string]interface{} {
 	return status
 }
 
-// initTAPDevice initializes the TAP device
+// initTAPDevice initializes the network device (TAP or TUN based on config/platform)
 func (dm *DaemonManager) initTAPDevice() error {
-	log.Printf("Creating TAP device: %s", dm.config.Network.TAPDevice)
+	// Determine device mode (default to TUN on macOS, TAP otherwise)
+	mode := dm.config.Network.Mode
+	if mode == "" {
+		// Auto-detect based on platform
+		mode = "tun" // Default to TUN for maximum compatibility
+	}
 
-	// Create TAP device with config
-	tapConfig := layer2.TAPConfig{
-		Name: dm.config.Network.TAPDevice,
+	// Determine device name (prefer device_name, fallback to tap_device)
+	deviceName := dm.config.Network.DeviceName
+	if deviceName == "" {
+		deviceName = dm.config.Network.TAPDevice
+	}
+
+	log.Printf("Creating %s device: %s", mode, deviceName)
+
+	// Create network device with unified interface
+	deviceConfig := layer2.DeviceConfig{
+		Mode: mode,
+		Name: deviceName,
 		MTU:  1500,
 	}
 
-	tap, err := layer2.NewTAPDevice(tapConfig)
+	device, err := layer2.NewNetworkDevice(deviceConfig)
 	if err != nil {
-		return fmt.Errorf("failed to create TAP device: %w", err)
+		return fmt.Errorf("failed to create %s device: %w", mode, err)
 	}
-	dm.tapDevice = tap
+	dm.tapDevice = device
 
 	// Parse IP address and netmask from CIDR
 	ip, ipNet, err := net.ParseCIDR(dm.config.Network.LocalIP)
@@ -436,17 +484,26 @@ func (dm *DaemonManager) initTAPDevice() error {
 	ones, _ := ipNet.Mask.Size()
 	netmask := fmt.Sprintf("%d", ones)
 
-	// Configure IP address using ip command
-	if err := tap.ConfigureInterface(ip.String(), netmask); err != nil {
-		return fmt.Errorf("failed to configure interface: %w", err)
+	// Configure IP address on network device
+	// Type assert to access platform-specific ConfigureInterface method
+	type Configurable interface {
+		ConfigureInterface(ipAddr, netmask string) error
 	}
 
-	log.Printf("✅ TAP device %s created with IP %s", tap.Name(), dm.config.Network.LocalIP)
+	if configurable, ok := dm.tapDevice.(Configurable); ok {
+		if err := configurable.ConfigureInterface(ip.String(), netmask); err != nil {
+			return fmt.Errorf("failed to configure interface: %w", err)
+		}
+	} else {
+		return fmt.Errorf("device does not support configuration")
+	}
+
+	log.Printf("✅ %s device %s created with IP %s", mode, dm.tapDevice.Name(), dm.config.Network.LocalIP)
 
 	// Start reading/writing frames
-	tap.Start()
+	dm.tapDevice.Start()
 
-	log.Printf("✅ TAP device reading/writing started")
+	log.Printf("✅ %s device reading/writing started", mode)
 
 	return nil
 }
@@ -553,7 +610,13 @@ func (dm *DaemonManager) initAPI() error {
 
 // initP2PListener initializes the P2P WebSocket listener
 func (dm *DaemonManager) initP2PListener() error {
-	log.Printf("Starting P2P WebSocket listener on port 8545...")
+	// Determine listener port (default 9545)
+	port := dm.config.P2P.ListenerPort
+	if port == 0 {
+		port = 9545 // Default port
+	}
+
+	log.Printf("Starting P2P WebSocket listener on port %d...", port)
 
 	// Initialize P2P connection
 	if dm.p2pConnection == nil {
@@ -568,13 +631,12 @@ func (dm *DaemonManager) initP2PListener() error {
 	})
 
 	// Start listening for incoming WebSocket connections
-	// Port 9545 - clean port, no conflicts with AWS CLI
-	listenAddr := ":9545"
+	listenAddr := fmt.Sprintf(":%d", port)
 	if err := dm.p2pConnection.Listen(listenAddr); err != nil {
 		return fmt.Errorf("failed to start P2P listener: %w", err)
 	}
 
-	log.Printf("✅ P2P WebSocket listener started on port 9545")
+	log.Printf("✅ P2P WebSocket listener started on port %d", port)
 
 	return nil
 }
@@ -619,11 +681,30 @@ func (dm *DaemonManager) frameRouterOutbound() {
 			return
 		case <-dm.ctx.Done():
 			return
-		case frame := <-dm.tapDevice.ReadChannel():
-			// Send to encryption pipeline (non-blocking)
-			if !dm.encryptionPipeline.SendFrame(frame) {
-				log.Printf("⚠️  Encryption pipeline full, dropping frame")
+		case packet := <-dm.tapDevice.ReadChannel():
+			// Detect protocol for debugging
+			protocol := "UNKNOWN"
+			if len(packet) >= 20 {
+				protoNum := packet[9]
+				switch protoNum {
+				case 1:
+					protocol = "ICMP"
+				case 6:
+					protocol = "TCP"
+				case 17:
+					protocol = "UDP"
+				}
+			}
+
+			// Send raw IP packet to encryption pipeline (non-blocking)
+			if !dm.encryptionPipeline.SendFrame(packet) {
+				log.Printf("⚠️  [%s] Encryption pipeline full, dropping packet", protocol)
 				continue
+			}
+
+			// DEBUG: Log that we sent to encryption
+			if protocol == "TCP" {
+				log.Printf("🔐 [TCP] Sent to encryption pipeline, waiting for encrypted frame...")
 			}
 
 			// Receive encrypted frame (blocking with context)
@@ -633,9 +714,16 @@ func (dm *DaemonManager) frameRouterOutbound() {
 
 			if err != nil {
 				if err != context.DeadlineExceeded {
-					log.Printf("⚠️  Failed to receive encrypted frame: %v", err)
+					log.Printf("⚠️  [%s] Failed to receive encrypted frame: %v", protocol, err)
+				} else if protocol == "TCP" {
+					log.Printf("⚠️  [TCP] TIMEOUT waiting for encrypted frame (100ms exceeded)")
 				}
 				continue
+			}
+
+			// DEBUG: Log successful encryption
+			if protocol == "TCP" {
+				log.Printf("✅ [TCP] Received encrypted frame (%d bytes)", len(encryptedFrame.Frame.Ciphertext))
 			}
 
 			// Serialize encrypted frame to bytes for WebSocket transmission
@@ -646,7 +734,9 @@ func (dm *DaemonManager) frameRouterOutbound() {
 
 			// Send over WebSocket
 			if err := dm.p2pConnection.SendFrame(frameBytes); err != nil {
-				log.Printf("⚠️  Failed to send frame over WebSocket: %v", err)
+				log.Printf("⚠️  [%s] Failed to send frame over WebSocket: %v", protocol, err)
+			} else if protocol == "TCP" {
+				log.Printf("📡 [TCP] Sent over WebSocket (%d bytes)", len(frameBytes))
 			}
 		}
 	}

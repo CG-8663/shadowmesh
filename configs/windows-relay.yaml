@@ -1,0 +1,28 @@
+# ShadowMesh Windows Client - Relay Mode Configuration
+
+daemon:
+  listen_address: "127.0.0.1:9090"
+  log_level: "info"
+
+network:
+  mode: "tun"
+  device_name: "ShadowMesh0"
+  local_ip: "10.10.10.3/24"
+
+encryption:
+  key: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+
+peer:
+  address: ""  # Not used in relay mode
+  id: "windows-client-3"
+
+nat:
+  enabled: false
+
+relay:
+  enabled: true
+  server: "ws://94.237.121.21:9545"
+
+p2p:
+  listener_enabled: false
+  listener_port: 0
